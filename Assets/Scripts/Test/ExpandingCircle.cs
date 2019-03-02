@@ -4,40 +4,34 @@ using UnityEngine;
 
 public class ExpandingCircle : MonoBehaviour
 {
-    private GameObject circleCenter;
     public int degreesPerSegment = 10;
-    [Range(0f,20f)]public float distanceFromCenter = 5f;
-    private float previousDistanceFromCenter = 0;
-    public bool centerHaveLineRenderer = false;
+
+    [Range(0f,20f)]
+    public float distanceFromCenter = 5f;
+
     public Material materialForNodes;
-    private List<NodeScript> listOfNodes = new List<NodeScript>();
+
+    public List<NodeScript> listOfNodes = new List<NodeScript>();
+
+    public bool expand;
+    public float speed;
+    public float strength = 100;
+    public float maxDistance = 10;
+
+
+    private float previousDistanceFromCenter = 0;
     // Start is called before the first frame update
     void Start()
     {
-        circleCenter = new GameObject("Circle Center");
-        circleCenter.transform.parent = transform;
-        circleCenter.transform.localPosition = Vector3.zero;
+        Statistics.instance.numberOfShips++;
         GameObject node;
         float curAngle = 0;
         NodeScript firstNode = null;
         NodeScript previousNode = null;
-        
-
-        LineRenderer lineRenderer = null;
-        if(centerHaveLineRenderer)
-            lineRenderer = circleCenter.AddComponent<LineRenderer>();
-
-        if (lineRenderer)
-        {
-            lineRenderer.startWidth = 0.2f;
-            lineRenderer.endWidth = 0.2f;
-            lineRenderer.positionCount = 360 / degreesPerSegment + 1;
-        }
-
-        for (int i = 0, j = 0; i < 360/ degreesPerSegment + 1; i++, j++)
+        for (int i = 0, j = 0; i < 360/ degreesPerSegment; i++, j++)
         {
             node = new GameObject("Node: " + i);
-            node.transform.parent = circleCenter.transform;
+            node.transform.parent = transform;
             node.transform.localPosition = new Vector3(Mathf.Cos(Mathf.Deg2Rad *curAngle) * distanceFromCenter, 0, Mathf.Sin(Mathf.Deg2Rad * curAngle) * distanceFromCenter);
 
             
@@ -45,9 +39,10 @@ public class ExpandingCircle : MonoBehaviour
             curAngle += degreesPerSegment;
             NodeScript  nS = node.AddComponent<NodeScript>();
             nS.materialForNodes = materialForNodes;
-            nS.center = circleCenter;
+            nS.center = gameObject;
             nS.directionFromCenter = new Vector3(node.transform.localPosition.x, node.transform.localPosition.y, node.transform.localPosition.z);
             nS.directionFromCenter.Normalize();
+            nS.strength = strength;
             if (previousNode != null)
             {
                 nS.left = previousNode;
@@ -60,13 +55,8 @@ public class ExpandingCircle : MonoBehaviour
             previousNode = nS;
             listOfNodes.Add(nS);
 
-            if (lineRenderer)
-                lineRenderer.SetPosition(j, previousNode.transform.position);
             
         }
-
-        if (lineRenderer)
-            lineRenderer.loop = true;
 
         previousNode.right = firstNode;
         firstNode.left = previousNode;
@@ -74,22 +64,39 @@ public class ExpandingCircle : MonoBehaviour
         foreach (NodeScript item in listOfNodes)
         {
             item.CreateLineBetweenNodes();
+            item.CreateColliderLineBetweenNodes();
         }
     }
 
     // Update is called once per frame
     void Update()
     {
+        if(expand)
+        {
+            distanceFromCenter += speed * Time.deltaTime;
+        }
+        if(distanceFromCenter > maxDistance)
+        {
+            expand = false;
+            gameObject.SetActive(false);
+        }
+
         if (previousDistanceFromCenter != distanceFromCenter)
         {
             foreach (var item in listOfNodes)
             {
-                item.transform.localPosition = item.directionFromCenter * distanceFromCenter;
-                
+                if (item)
+                {
+                    item.transform.localPosition = item.directionFromCenter * distanceFromCenter;
+                }
             }
             foreach (var item in listOfNodes)
             {
-                item.UpdateMesh();
+                if (item)
+                {
+                    item.UpdateMesh();
+                    item.UpdateLine();
+                }
             }
             previousDistanceFromCenter = distanceFromCenter;
         }
