@@ -2,6 +2,8 @@
 {
     float maxHealth;
     float health;
+    public delegate void OnDeath();
+    public OnDeath death;
 
     public Health(int maxHealth = 100)
     {
@@ -14,7 +16,7 @@
         health -= damage;
         if(health <= 0)
         {
-            //Dead
+            death?.Invoke();
         }
     }
     public float GetHealth()

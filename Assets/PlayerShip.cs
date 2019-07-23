@@ -19,7 +19,7 @@ public class PlayerShip : MonoBehaviour, IDamagable
     {
         if(Input.GetButtonDown(FirePulseControllAxis))
         {
-            Pulse pp = new Pulse(pulseSpeed, pulsePower, pulseMaxDistance, transform, shipColor);
+            Pulse.CreatePulse(pulseSpeed, pulsePower, pulseMaxDistance, transform, shipColor);
         }
 
         if(Input.GetButton(VerticalControllAxis))

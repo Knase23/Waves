@@ -4,29 +4,28 @@ using UnityEngine;
 
 public class Pulse : MonoBehaviour
 {
-    public int degreesPerSegment = 10;
-    public float distanceFromCenter = 5f;
-    public Material materialForNodes;
+    private int degreesPerSegment = 45;
+    private float distanceFromCenter = 1f;
     public List<NodeScript> listOfNodes = new List<NodeScript>();
 
-    public bool expand;
+    private bool expand;
     private float speed;
-    public float maxDistance = 10;
+    private float maxDistance = 10;
     private float previousDistanceFromCenter = 0;
 
-
-    public Pulse(float speed, float strength, float maxDistance, Transform maker, Color makerColor)
+    public static void CreatePulse(float speed, float strength, float maxDistance, Transform maker, Color makerColor)
     {
-        GameObject pulse = new GameObject("Pulse");
-        pulse.transform.position = maker.position;
-        CreatePulse(speed, strength, maxDistance, maker, makerColor);
+        GameObject gameObject = new GameObject("Pulse");
+        gameObject.transform.position = maker.position;
+        Pulse pulse = gameObject.AddComponent<Pulse>();
+        pulse.Init(speed, strength, maxDistance, maker, makerColor);
     }
-
     // Start is called before the first frame update
-    public void CreatePulse(float speed,float strength, float maxDistance, Transform maker, Color makerColor)
+    public void Init(float speed,float strength, float maxDistance, Transform maker, Color makerColor, int degreesPerSegment = 45,float distanceFromCenter = 1f, bool expand = true)
     {
         Statistics.instance.numberOfShips++;
-
+        this.distanceFromCenter = distanceFromCenter;
+        this.degreesPerSegment = degreesPerSegment;
         GameObject node;
         float curAngle = 0;
         NodeScript firstNode = null;
@@ -42,7 +41,6 @@ public class Pulse : MonoBehaviour
             curAngle += degreesPerSegment;
 
             NodeScript  nS = node.AddComponent<NodeScript>();
-            nS.materialForNodes = materialForNodes;
             nS.strength = strength;
             nS.makerColor = makerColor;
             nS.center = gameObject;
@@ -71,8 +69,7 @@ public class Pulse : MonoBehaviour
             item.CreateLineBetweenNodes();
             item.CreateColliderLineBetweenNodes();
         }
-
-        //Debug.Break();
+        this.expand = expand;
     }
 
     // Update is called once per frame

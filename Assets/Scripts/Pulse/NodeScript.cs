@@ -10,7 +10,6 @@ public class NodeScript : MonoBehaviour
     private LineRenderer lineRenderer;
     private CapsuleCollider collider;
     internal Vector3 directionFromCenter;
-    public Material materialForNodes;
     public Transform makerOfPulse;
     public Color makerColor = Color.green;
 
@@ -30,7 +29,6 @@ public class NodeScript : MonoBehaviour
     public void CreateLineBetweenNodes()
     {
         lineRenderer = gameObject.AddComponent<LineRenderer>();
-        lineRenderer.material = materialForNodes;
         lineRenderer.SetPosition(0, transform.position);
         lineRenderer.SetPosition(1, right.transform.position);
         lineRenderer.startWidth = 0.1f;
@@ -120,7 +118,6 @@ public class NodeScript : MonoBehaviour
         //Make the gameobject into a node. 
         NodeScript newNodeScript = node.AddComponent<NodeScript>();
         // Sets all values to the correct values based on the Node that creates the new node.
-        newNodeScript.materialForNodes = materialForNodes;
         newNodeScript.center = center;
         newNodeScript.directionFromCenter = new Vector3(node.transform.localPosition.x, node.transform.localPosition.y, node.transform.localPosition.z);
         newNodeScript.directionFromCenter.Normalize();
