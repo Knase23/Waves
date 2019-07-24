@@ -6,7 +6,7 @@ public class Pulse : MonoBehaviour
 {
     private int degreesPerSegment = 45;
     private float distanceFromCenter = 1f;
-    public List<NodeScript> listOfNodes = new List<NodeScript>();
+    public List<PulseNode> listOfNodes = new List<PulseNode>();
 
     private bool expand;
     private float speed;
@@ -26,45 +26,44 @@ public class Pulse : MonoBehaviour
         Statistics.instance.numberOfShips++;
         this.distanceFromCenter = distanceFromCenter;
         this.degreesPerSegment = degreesPerSegment;
-        GameObject node;
         float curAngle = 0;
-        NodeScript firstNode = null;
-        NodeScript previousNode = null;
+        PulseNode firstNode = null;
+        PulseNode previousNode = null;
         this.speed = speed;
         this.maxDistance = maxDistance;
         for (int i = 0, j = 0; i < 360/ degreesPerSegment; i++, j++)
         {
-            node = new GameObject("Node: " + i);
-            node.transform.parent = transform;
-            node.transform.localPosition = new Vector3(Mathf.Cos(Mathf.Deg2Rad *curAngle) * distanceFromCenter, 0, Mathf.Sin(Mathf.Deg2Rad * curAngle) * distanceFromCenter);            
 
+            // Create a Node
+            PulseNode node = PulseNode.CreateNode(this, curAngle, distanceFromCenter, strength, maker, makerColor);
+
+            //Íncreasing this makes so the next node will have a diffrent position
             curAngle += degreesPerSegment;
 
-            NodeScript  nS = node.AddComponent<NodeScript>();
-            nS.strength = strength;
-            nS.makerColor = makerColor;
-            nS.center = gameObject;
-            nS.directionFromCenter = new Vector3(node.transform.localPosition.x, node.transform.localPosition.y, node.transform.localPosition.z);
-            nS.directionFromCenter.Normalize();
-            
-            nS.makerOfPulse = maker;
-            if (previousNode != null)
-            {
-                nS.left = previousNode;
-                previousNode.right = nS;
-            }
+            // Need to save the first node so we can connect it when all nodes are done
             if (firstNode == null)
             {
-                firstNode = nS;
+                firstNode = node;
             }
-            previousNode = nS;
-            listOfNodes.Add(nS);
+
+            //Sets the Neighours for the node
+            //If we already made a node before this one then set make sure we are connected 
+            if (previousNode != null)
+            {
+                node.SetNeighbours(left: previousNode); ;
+                previousNode.SetNeighbours(node);
+            }
+            
+            //Add it to the list for this pulse and then set the created one as the previous made node
+            previousNode = node;
+            listOfNodes.Add(node);
         }
 
-        previousNode.right = firstNode;
-        firstNode.left = previousNode;
+        // Connect the first node and the last made node.
+        previousNode.SetNeighbours(firstNode);
+        firstNode.SetNeighbours(left:previousNode);
 
-        foreach (NodeScript item in listOfNodes)
+        foreach (PulseNode item in listOfNodes)
         {
             item.CreateLineBetweenNodes();
             item.CreateColliderLineBetweenNodes();
@@ -75,10 +74,12 @@ public class Pulse : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        // Should the pulse Expand
         if(expand)
         {
             distanceFromCenter += speed * Time.deltaTime;
         }
+        // If the pulse is to big
         if(distanceFromCenter > maxDistance)
         {
             expand = false;
@@ -94,12 +95,14 @@ public class Pulse : MonoBehaviour
                     item.transform.localPosition = item.directionFromCenter * distanceFromCenter;
                 }
             }
+
+            
             foreach (var item in listOfNodes)
             {
                 if (item)
                 {
-                    item.UpdateMesh();
-                    item.UpdateLine();
+                    item.UpdateCollider();
+                    item.UpdateLineRender();
                 }
             }
             previousDistanceFromCenter = distanceFromCenter;

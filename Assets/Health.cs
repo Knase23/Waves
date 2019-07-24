@@ -2,8 +2,8 @@
 {
     float maxHealth;
     float health;
-    public delegate void OnDeath();
-    public OnDeath death;
+    public delegate void OnHealthZeroOrUnder();
+    public OnHealthZeroOrUnder death;
 
     public Health(int maxHealth = 100)
     {
