@@ -6,12 +6,12 @@ public class LevelGenerator : MonoBehaviour
 {
     public int numberOfAstroidsToSpawn = 300;
     public List<GameObject> astroids = new List<GameObject>();
+    
     // Start is called before the first frame update
     public void GenerateLevel()
     {
         for (int i = 0; i < numberOfAstroidsToSpawn; i++)
         {
-
             // Create Astroids
             GameObject ob = GameObject.CreatePrimitive(PrimitiveType.Cube);
             ob.transform.SetParent(transform);
@@ -31,8 +31,6 @@ public class LevelGenerator : MonoBehaviour
              *  You can only be damaged by them when you or it have a greater impact velocity.
              *  // Problems that might be later:
              *  - If it goes online multiplayer, how should we sync all astorids states to all clients
-             *  - Might go to unitys Entitiy Component System (ECS). Will need to test and reasearch it. 
-             *      - If you find a good solution for the pulses in the ECS then it will need to be rebased into it
              */
         }
     }
