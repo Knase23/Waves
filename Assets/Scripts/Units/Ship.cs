@@ -9,9 +9,7 @@ public class Ship : MonoBehaviour, IPlayerShipControl ,IDamagable
     public Color shipColor = Color.green;
 
     #region Input Dependent
-    public string VerticalControllAxis = "Vertical";
-    public string HorizontalControllAxis = "Horizontal";
-    public string FirePulseControllAxis = "FirePulse";
+    
     #endregion
 
     public Health hp = new Health();
@@ -27,18 +25,6 @@ public class Ship : MonoBehaviour, IPlayerShipControl ,IDamagable
     {
         hp.OnDeath += OnDeath;
         rb = GetComponent<Rigidbody>();
-    }
-   
-    // Update is called once per frame
-    void Update()
-    {
-        #region Input Dependent
-        if (Input.GetButtonDown(FirePulseControllAxis))
-        {
-            ActionOne();
-        }
-        Move(Input.GetAxis(HorizontalControllAxis), Input.GetAxis(VerticalControllAxis));
-        #endregion
     }
 
     public void TakeDamage(float damage)
@@ -72,5 +58,10 @@ public class Ship : MonoBehaviour, IPlayerShipControl ,IDamagable
         Vector3 increment = vertical * transform.forward * Time.deltaTime * speed;
         rb.velocity += increment;
         transform.Rotate(horizontal * Vector3.up * 10);
+    }
+
+    public void Move(Vector3 position)
+    {
+        transform.position = position;
     }
 }

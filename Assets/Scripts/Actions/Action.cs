@@ -7,8 +7,7 @@ public abstract class Action : MonoBehaviour
 {
     [SerializeField]
     public float cooldownTime;
-
-    public float timer;
+    private float timer;
 
     public void Execute()
     {
@@ -18,10 +17,8 @@ public abstract class Action : MonoBehaviour
             timer = cooldownTime;
         }
     }
+
     protected abstract void ActionExecute();
-
-
-
     public void Update()
     {
         timer -= Time.deltaTime;

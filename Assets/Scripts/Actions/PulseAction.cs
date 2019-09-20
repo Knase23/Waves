@@ -4,7 +4,14 @@ using UnityEngine;
 public class PulseAction : Action
 {
     public float speed, power, maxDistance;
-    public Color color;
+
+
+
+    private Color color;
+    private void Start()
+    {
+        color = GetComponent<Ship>().shipColor;
+    }
 
     protected override void ActionExecute()
     {

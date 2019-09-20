@@ -8,7 +8,7 @@ public class PulseNode : MonoBehaviour
     private PulseNode left;
     private PulseNode right;
     private LineRenderer lineRenderer;
-    private CapsuleCollider collider;
+    private CapsuleCollider capsuleCollider;
     internal Vector3 directionFromCenter;
     public Transform makerOfPulse;
     public Color makerColor = Color.green;
@@ -53,8 +53,8 @@ public class PulseNode : MonoBehaviour
     public void CreateColliderLineBetweenNodes()
     {
         transform.LookAt(right.transform);
-        collider = gameObject.AddComponent<CapsuleCollider>();
-        collider.InitiLineCollider(right.transform);
+        capsuleCollider = gameObject.AddComponent<CapsuleCollider>();
+        capsuleCollider.InitiLineCollider(right.transform);
        
         rigidBody = gameObject.AddComponent<Rigidbody>();
         rigidBody.useGravity = false;
@@ -96,7 +96,7 @@ public class PulseNode : MonoBehaviour
     }
     private void Update()
     {
-        if (collider.height > (Statistics.instance ? Statistics.instance.maxLengthBetweenNodes : 2))
+        if (capsuleCollider.height > (Statistics.instance ? Statistics.instance.maxLengthBetweenNodes : 2))
         {
             CreateAdditionalNode();
         }
@@ -109,8 +109,8 @@ public class PulseNode : MonoBehaviour
     public void UpdateCollider()
     {
         transform.LookAt(right.transform);
-        collider.height = Vector3.Distance(right.transform.position, transform.position);
-        collider.center = Vector3.forward * collider.height * 0.5f;
+        capsuleCollider.height = Vector3.Distance(right.transform.position, transform.position);
+        capsuleCollider.center = Vector3.forward * capsuleCollider.height * 0.5f;
 
     }
     public void CreateAdditionalNode()
