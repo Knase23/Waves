@@ -7,7 +7,6 @@ public class Pulse : MonoBehaviour
     private int degreesPerSegment = 45;
     private float distanceFromCenter = 1f;
     public List<PulseNode> listOfNodes = new List<PulseNode>();
-
     private bool expand;
     private float speed;
     private float maxDistance = 10;
@@ -20,6 +19,7 @@ public class Pulse : MonoBehaviour
         Pulse pulse = gameObject.AddComponent<Pulse>();
         pulse.Init(speed, strength, maxDistance, maker, makerColor);
     }
+
     // Start is called before the first frame update
     public void Init(float speed,float strength, float maxDistance, Transform maker, Color makerColor, int degreesPerSegment = 45,float distanceFromCenter = 1f, bool expand = true)
     {
