@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 8009653376189735725}
   m_Layer: 0
   m_Name: Pulse
-  m_TagString: Untagged
+  m_TagString: Pulse
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -43,11 +43,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b106b5a242600414dbb8038064a1ef65, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  degreesPerSegment: 90
-  distanceFromCenter: 1
-  materialForNodes: {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
   listOfNodes: []
-  expand: 1
-  speed: 10
-  strength: 10
-  maxDistance: 45

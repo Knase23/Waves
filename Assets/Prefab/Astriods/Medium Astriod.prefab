@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 4682819714485558246}
   m_Layer: 0
   m_Name: Medium Astriod
-  m_TagString: Untagged
+  m_TagString: Astriod
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

@@ -2,20 +2,35 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Ship : MonoBehaviour, IPlayerShipControl ,IDamagable
+public class Ship : MonoBehaviour, IPlayerShipControl, IDamagable
 {
     public int speed = 10;
 
     public Color shipColor = Color.green;
 
-    #region Input Dependent
-    
-    #endregion
-
+    /// <summary>
+    /// Health of the Ship
+    /// </summary>
     public Health hp = new Health();
 
+    /// <summary>
+    /// Storing a picked up action waiting for which action to replace
+    /// </summary>
+    public Upgrade storedUpgrade;
+
+    /// <summary>
+    /// First action that the ship can use!
+    /// </summary>
     public Action actionOne;
+
+    /// <summary>
+    /// Second action that the ship can use!
+    /// </summary>
     public Action actionTwo;
+
+    /// <summary>
+    /// Third action that the ship can use!
+    /// </summary>
     public Action actionThree;
 
 

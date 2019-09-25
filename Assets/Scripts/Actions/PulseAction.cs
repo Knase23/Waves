@@ -5,9 +5,8 @@ public class PulseAction : Action
 {
     public float speed, power, maxDistance;
 
-
-
     private Color color;
+
     private void Start()
     {
         color = GetComponent<Ship>().shipColor;

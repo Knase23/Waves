@@ -19,7 +19,7 @@ public class LevelGenerator : MonoBehaviour
     public int maxNumberOfFailedPlacements = 10;
 
     public List<GameObject> astroids = new List<GameObject>();
-
+    
     //Plans/Ideas/Questions
     /*  Astroids should spilt when enough damage is done.
      *  They will have a small velocity when they get hit.
@@ -30,16 +30,16 @@ public class LevelGenerator : MonoBehaviour
      */
 
 
-     /// <summary>
-     /// Generates a map of astiods with the given prefabs
-     /// </summary>
+    /// <summary>
+    /// Generates a map of astiods with the given prefabs
+    /// </summary>
     public void GenerateLevel()
     {
         for (int i = 0; i < astroidsToSpawn; i++)
         {
             //Spawn a Astriod
             GameObject ob;
-            if ( i < numberOfLarge)
+            if (i < numberOfLarge)
             {
                 ob = Instantiate(largeAstroidPrefabs, mapTransform);
 
@@ -52,10 +52,8 @@ public class LevelGenerator : MonoBehaviour
             {
                 ob = Instantiate(smallAstroidPrefabs, mapTransform);
             }
-            Vector3 position = new Vector3(Random.Range(-80, 80), 0, Random.Range(-80, 80));
+            Vector3 position = new Vector3(Random.Range(-95, 95), 0, Random.Range(-95, 95));
 
-
-            
             //Find a spot to place the object
             bool notSafeSpot = true;
 
@@ -75,7 +73,7 @@ public class LevelGenerator : MonoBehaviour
                  */
 
                 // Check if we hit a object on the random location 
-                if (Physics.Raycast(position + (2 * Vector3.up),Vector3.down))
+                if (Physics.Raycast(position + (2 * Vector3.up), Vector3.down))
                 {
                     position = new Vector3(Random.Range(-80, 80), 0, Random.Range(-80, 80));
                     notSafeSpot = true;
@@ -88,7 +86,7 @@ public class LevelGenerator : MonoBehaviour
 
             } while (notSafeSpot || numberOfFailedPlacements > maxNumberOfFailedPlacements);
 
-            if(numberOfFailedPlacements > maxNumberOfFailedPlacements)
+            if (numberOfFailedPlacements > maxNumberOfFailedPlacements)
             {
                 Debug.Log("Could not find a place to place it, will place it on last random position");
             }
@@ -103,12 +101,22 @@ public class LevelGenerator : MonoBehaviour
     /// </summary>
     public void ClearLevel()
     {
+
         foreach (var astroid in astroids)
         {
             DestroyImmediate(astroid);
         }
         astroids.Clear();
+
+        for (int i = 0; i < mapTransform.childCount; i++)
+        {
+            Transform child = mapTransform.GetChild(i);
+            if (child.tag == "Astriod")
+            {
+                DestroyImmediate(child);
+            }
+        }
     }
 
-    
+
 }

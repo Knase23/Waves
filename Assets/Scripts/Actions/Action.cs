@@ -7,6 +7,7 @@ public abstract class Action : MonoBehaviour
 {
     [SerializeField]
     public float cooldownTime;
+
     private float timer;
 
     public void Execute()
