@@ -1,14 +1,35 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
+using System;
 
 public class LevelGenerator : MonoBehaviour
 {
-    [Header("Amount of astroids")]
-    public int astroidsToSpawn = 300;
-    public int numberOfLarge = 10;
-    public int numberOfMedium = 30;
     public Transform mapTransform;
+    public Transform smallTransform;
+    public Transform mediumTransform;
+    public Transform largeTransform;
+
+    public Vector2Int mapSize;
+
+    [Header("Perlin noise")]
+    public float noiseZoom;
+    public bool randomOffset = false;
+    public Vector2 perlinOffset;
+
+    public float levelScale;
+
+    [Serializable]
+    public struct Range2Float
+    {
+        public float max;
+        public float min;
+    }
+
+    public Range2Float largeRange;
+    public Range2Float mediumRange;
+    public Range2Float smallRange;
 
     [Header("Astriod prefabs")]
     public GameObject largeAstroidPrefabs;
@@ -18,8 +39,6 @@ public class LevelGenerator : MonoBehaviour
     [Header("Tolerance")]
     public int maxNumberOfFailedPlacements = 10;
 
-    public List<GameObject> astroids = new List<GameObject>();
-    
     //Plans/Ideas/Questions
     /*  Astroids should spilt when enough damage is done.
      *  They will have a small velocity when they get hit.
@@ -29,93 +48,230 @@ public class LevelGenerator : MonoBehaviour
      *  - If it goes online multiplayer, how should we sync all astorids states to all clients
      */
 
-
     /// <summary>
     /// Generates a map of astiods with the given prefabs
     /// </summary>
     public void GenerateLevel()
     {
-        for (int i = 0; i < astroidsToSpawn; i++)
+        ClearLevel();
+        float[,] noiseMap;
+
+        if (randomOffset)
         {
-            //Spawn a Astriod
-            GameObject ob;
-            if (i < numberOfLarge)
+            noiseMap = GenerateNoiseMap(mapSize.x, mapSize.y, noiseZoom, UnityEngine.Random.Range(-100, 100), UnityEngine.Random.Range(-100, 100));
+        }
+        else
+        {
+            noiseMap = GenerateNoiseMap(mapSize.x, mapSize.y, noiseZoom, perlinOffset.x, perlinOffset.y);
+
+        }
+        Vector3 centerPositionCorrection = new Vector3(transform.position.x - (mapSize.x / 2), transform.position.y, transform.position.z - (mapSize.y / 2));
+
+        for (int x = 0; x < mapSize.x; x++)
+        {
+            for (int y = 0; y < mapSize.y; y++)
             {
-                ob = Instantiate(largeAstroidPrefabs, mapTransform);
-
-            }
-            else if (i < numberOfMedium + numberOfLarge)
-            {
-                ob = Instantiate(mediumAstroidPrefabs, mapTransform);
-            }
-            else
-            {
-                ob = Instantiate(smallAstroidPrefabs, mapTransform);
-            }
-            Vector3 position = new Vector3(Random.Range(-95, 95), 0, Random.Range(-95, 95));
-
-            //Find a spot to place the object
-            bool notSafeSpot = true;
-
-            //Makes sure so we don't get a Infinite Loop
-            int numberOfFailedPlacements = 0;
-
-            do
-            {
-                notSafeSpot = false;
-
-                //Need some other rules for determineing if we are allowed to place the object there
-                /* Example of rules
-                 * - Large Astriod cannot be 5 or less units from each other
-                 * - Medium Astriod can be placed only 2 -7 units from a large Astriod
-                 * - Small Astriods can be placed any were but must have a Astriod 1-4 units from it
-                 * - No Astriod should be place inside another astriod
-                 */
-
-                // Check if we hit a object on the random location 
-                if (Physics.Raycast(position + (2 * Vector3.up), Vector3.down))
+                // Small
+                if (noiseMap[x, y] < smallRange.max && noiseMap[x, y] > smallRange.min)
                 {
-                    position = new Vector3(Random.Range(-80, 80), 0, Random.Range(-80, 80));
-                    notSafeSpot = true;
-                    numberOfFailedPlacements++;
-                }
-                else
-                {
-                    numberOfFailedPlacements = 0;
+                    Vector3 position = new Vector3(centerPositionCorrection.x + x, centerPositionCorrection.y, centerPositionCorrection.z + y);
+                    if (EditorApplication.isPlaying)
+                    {
+                        Instantiate(smallAstroidPrefabs, position, Quaternion.identity, smallTransform);
+
+                    }
+                    else
+                    {
+                        GameObject prefab = PrefabUtility.InstantiatePrefab(smallAstroidPrefabs, smallTransform) as GameObject;
+                        prefab.transform.position = position;
+                    }
                 }
 
-            } while (notSafeSpot || numberOfFailedPlacements > maxNumberOfFailedPlacements);
+                // Medium
+                if (noiseMap[x, y] < mediumRange.max && noiseMap[x, y] > mediumRange.min)
+                {
+                    Vector3 position = new Vector3(centerPositionCorrection.x + x, centerPositionCorrection.y, centerPositionCorrection.z + y);
 
-            if (numberOfFailedPlacements > maxNumberOfFailedPlacements)
-            {
-                Debug.Log("Could not find a place to place it, will place it on last random position");
+                    if (EditorApplication.isPlaying)
+                    {
+                        Instantiate(mediumAstroidPrefabs, position, Quaternion.identity, mediumTransform);
+                    }
+                    else
+                    {
+
+                        GameObject prefab = PrefabUtility.InstantiatePrefab(mediumAstroidPrefabs, mediumTransform) as GameObject;
+                        prefab.transform.position = position;
+                    }
+                }
+                //Large
+                if (noiseMap[x, y] < largeRange.max && noiseMap[x, y] > largeRange.min)
+                {
+                    Vector3 position = new Vector3(centerPositionCorrection.x + x, centerPositionCorrection.y, centerPositionCorrection.z + y);
+
+                    if (EditorApplication.isPlaying)
+                    {
+                        Instantiate(largeAstroidPrefabs, position, Quaternion.identity, largeTransform);
+                    }
+                    else
+                    {
+                        GameObject prefab = PrefabUtility.InstantiatePrefab(largeAstroidPrefabs, largeTransform) as GameObject;
+                        prefab.transform.position = position;
+
+                    }
+                }
             }
-            //Place it
-            ob.transform.position = position;
-            astroids.Add(ob);
+        }
+
+        CheckAndRemoveObjectsThatIsInsideEachOther(largeTransform);
+        CheckAndRemoveObjectsThatIsInsideEachOther(mediumTransform);
+        CheckAndRemoveObjectsThatIsInsideEachOther(smallTransform);
+
+        List<GameObject> medium = GetAstriodsFromTransform(mediumTransform);
+        List<GameObject> mediumToRemove = GetListOfIntercetionsBetweenToListsOfObjects(GetAstriodsFromTransform(largeTransform),medium);
+        foreach (var item in mediumToRemove)
+        {
+            DestroyImmediate(item);
+        }
+
+        List<GameObject> smallToRemove = GetListOfIntercetionsBetweenToListsOfObjects(medium,GetAstriodsFromTransform(smallTransform));
+        foreach (var item in smallToRemove)
+        {
+            DestroyImmediate(item);
         }
     }
+    private List<GameObject> GetListOfIntercetionsBetweenToListsOfObjects(List<GameObject> list, List<GameObject> list2)
+    {
+        List<GameObject> smallToRemove = new List<GameObject>();
+        for (int i = 0; i < list.Count; i++)
+        {
+            Bounds mediumBounds = GetGameObjectsRealBounds(list[i]);
+            for (int k = 0; k < list2.Count; k++)
+            {
+                if (smallToRemove.Contains(list2[k]))
+                {
+                    continue;
+                }
+                Bounds smallBounds = GetGameObjectsRealBounds(list2[k]);
+                if (mediumBounds.Intersects(smallBounds))
+                {
+                    //Debug.Log(i +" added "+  k + " Is in the RemoveList");
+                    smallToRemove.Add(list2[k]);
+                    continue;
+                }
+            }
+        }
+        return smallToRemove;
+    }
+    private Bounds GetGameObjectsRealBounds(GameObject gameObject)
+    {
+       return new Bounds(gameObject.transform.position, gameObject.GetComponent<Collider>().bounds.extents * 2);
+    }
+
+    private void CheckAndRemoveObjectsThatIsInsideEachOther(Transform transform)
+    {
+        List<GameObject> astriodsToRemove = CheckListOfGameObjectsIfTheyIntercets(GetAstriodsFromTransform(transform));
+        foreach (var item in astriodsToRemove)
+        {
+            DestroyImmediate(item);
+        }
+    }
+
+    private List<GameObject> CheckListOfGameObjectsIfTheyIntercets(List<GameObject> list)
+    {
+        List<GameObject> astriodsToRemove = new List<GameObject>();
+        for (int i = 0; i < list.Count; i++)
+        {
+            if (astriodsToRemove.Contains(list[i]))
+            {
+                continue;
+            }
+
+            Bounds astriodBounds = GetGameObjectsRealBounds(list[i]);
+
+            for (int k = i + 1; k < list.Count; k++)
+            {
+                Bounds realBounds = GetGameObjectsRealBounds(list[k]);
+
+                if (astriodBounds.Intersects(realBounds))
+                {
+                    //Debug.Log(i +" added "+  k + " Is in the RemoveList");
+                    astriodsToRemove.Add(list[k]);
+                }
+
+            }
+
+        }
+        return astriodsToRemove;
+    }
+    /// <summary>
+    /// Returns a Noise Map that can be used to make a level
+    /// </summary>
+    /// <param name="mapDepth"></param>
+    /// <param name="mapWidth"></param>
+    /// <param name="scale"> Acts as a Zoom on the noise map</param>
+    /// <returns>Noise Map</returns>
+    public float[,] GenerateNoiseMap(int mapDepth, int mapWidth, float scale, float offsetX = 0, float offsetZ = 0)
+    {
+        // create an empty noise map with the mapDepth and mapWidth coordinates
+        float[,] noiseMap = new float[mapDepth, mapWidth];
+
+        for (int zIndex = 0; zIndex < mapDepth; zIndex++)
+        {
+            for (int xIndex = 0; xIndex < mapWidth; xIndex++)
+            {
+                // calculate sample indices based on the coordinates and the scale
+                float sampleX = (xIndex / scale) + offsetX;
+                float sampleZ = (zIndex / scale) + offsetZ;
+
+                // generate noise value using PerlinNoise
+                float noise = Mathf.PerlinNoise(sampleX, sampleZ);
+
+                noiseMap[zIndex, xIndex] = noise;
+            }
+        }
+        return noiseMap;
+    }
+
 
     /// <summary>
     /// Clears all astriods inside the Astriod list. AKA makes the map empty
     /// </summary>
     public void ClearLevel()
     {
-
-        foreach (var astroid in astroids)
+        List<GameObject> allChilds = GetAstriodsFromTransform(mapTransform);
+        foreach (var child in allChilds)
         {
-            DestroyImmediate(astroid);
+            DestroyImmediate(child);
         }
-        astroids.Clear();
+    }
 
-        for (int i = 0; i < mapTransform.childCount; i++)
+
+    /// <summary>
+    /// Recursive Function, go though all transforms children until a the tag matches and then adds it to the list
+    /// </summary>
+    /// <param name="tag"></param>
+    /// <param name="transform"></param>
+    /// <param name="gameObjects"></param>
+    private void AddGameObjectWithTagFormTransform(string tag,Transform transform, ref List<GameObject> gameObjects)
+    {
+        if(transform.tag == tag)
         {
-            Transform child = mapTransform.GetChild(i);
-            if (child.tag == "Astriod")
-            {
-                DestroyImmediate(child);
-            }
+            gameObjects.Add(transform.gameObject);
+
+            return;
         }
+        for (int i = 0; i < transform.childCount; i++)
+        {
+            AddGameObjectWithTagFormTransform(tag, transform.GetChild(i), ref gameObjects);
+        }
+    }
+
+    private List<GameObject> GetAstriodsFromTransform(Transform transform)
+    {
+        List<GameObject> list = new List<GameObject>();
+        // This is a Recursive Function, it will go though all gameobjects under the given transform and added them to the list
+        AddGameObjectWithTagFormTransform("Astriod", transform, ref list);
+        return list;
     }
 
 
