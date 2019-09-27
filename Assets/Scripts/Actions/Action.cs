@@ -24,4 +24,9 @@ public abstract class Action : MonoBehaviour
     {
         timer -= Time.deltaTime;
     }
+
+    public virtual void ApplyUpgrade(Ship ship, Upgrade upgrade)
+    {
+        ship.storedUpgrade = null;
+    }
 }

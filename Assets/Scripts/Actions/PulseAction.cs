@@ -16,4 +16,21 @@ public class PulseAction : Action
     {
         Pulse.CreatePulse(speed, power, maxDistance, transform, color);
     }
+
+    public override void ApplyUpgrade(Ship ship, Upgrade upgrade)
+    {
+
+        if (upgrade is DamageUpgrade)
+        {
+            DamageUpgrade damageUpgrade = upgrade as DamageUpgrade;
+            power += damageUpgrade.amount;
+        }
+
+        if (upgrade is CoolDownUpgrade)
+        {
+            CoolDownUpgrade cooldownUpgrade = upgrade as CoolDownUpgrade;
+            cooldownTime -= cooldownUpgrade.amount;
+        }
+
+    }
 }

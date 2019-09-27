@@ -5,7 +5,6 @@ using UnityEngine;
 public class InputHandler : MonoBehaviour
 {
 
-
     [Tooltip("Uses Input.GetAxis")]
     public string VerticalAxis = "Vertical";
 
@@ -14,9 +13,10 @@ public class InputHandler : MonoBehaviour
 
     [Tooltip("Uses Input.GetButton")]
     public string ActionOneButton = "FirePulse";
+
+
     public NetworkLocation networkLocation = NetworkLocation.Local;
     public IPlayerShipControl shipControl;
-
 
     public enum NetworkLocation
     {

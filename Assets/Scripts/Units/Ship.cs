@@ -5,6 +5,7 @@ using UnityEngine;
 public class Ship : MonoBehaviour, IPlayerShipControl, IDamagable
 {
     public int speed = 10;
+    public float rotationSpeed = 2;
 
     public Color shipColor = Color.green;
 
@@ -57,22 +58,38 @@ public class Ship : MonoBehaviour, IPlayerShipControl, IDamagable
     {
         actionOne.Execute();
     }
+    public void ActionOneUpgrade()
+    {
+        actionOne.ApplyUpgrade(this, storedUpgrade);
+    }
+
 
     public void ActionTwo()
     {
         actionTwo.Execute();
     }
+    public void ActionTwoUpgrade()
+    {
+        actionTwo.ApplyUpgrade(this, storedUpgrade);
+    }
+
 
     public void ActionThree()
     {
         actionThree.Execute();
     }
+    public void ActionThreeUpgrade()
+    {
+        actionThree.ApplyUpgrade(this, storedUpgrade);
+    }
+
 
     public void Move(float horizontal, float vertical)
     {
         Vector3 increment = vertical * transform.forward * Time.deltaTime * speed;
         rb.velocity += increment;
-        transform.Rotate(horizontal * Vector3.up * 10);
+        transform.Rotate(horizontal * Vector3.up * rotationSpeed);
+        transform.rotation = Quaternion.Euler(0, transform.rotation.eulerAngles.y, 0);
     }
 
     public void Move(Vector3 position)

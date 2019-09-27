@@ -2,16 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[CreateAssetMenu(fileName = "Damage Upgrade", menuName = "ScriptableObjects/Upgrade/DamageUpgrade", order = 1)]
 public class DamageUpgrade : Upgrade
 {
     public float amount = 1;
-    public override void ApplyUpgrade(Ship ship)
-    {
-        //Example Increase Damage for Pulse Action
-        PulseAction action = GetAppropriateAction<PulseAction>(ship);
-        action.power += amount;
-    }
-
-
-
 }

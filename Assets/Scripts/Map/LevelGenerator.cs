@@ -77,13 +77,16 @@ public class LevelGenerator : MonoBehaviour
                     Vector3 position = new Vector3(centerPositionCorrection.x + x, centerPositionCorrection.y, centerPositionCorrection.z + y);
                     if (EditorApplication.isPlaying)
                     {
-                        Instantiate(smallAstroidPrefabs, position, Quaternion.identity, smallTransform);
+                        
+
+                        Instantiate(smallAstroidPrefabs, position, UnityEngine.Random.rotation, smallTransform);
 
                     }
                     else
                     {
                         GameObject prefab = PrefabUtility.InstantiatePrefab(smallAstroidPrefabs, smallTransform) as GameObject;
                         prefab.transform.position = position;
+                        prefab.transform.rotation = UnityEngine.Random.rotation;
                     }
                 }
 
@@ -94,13 +97,14 @@ public class LevelGenerator : MonoBehaviour
 
                     if (EditorApplication.isPlaying)
                     {
-                        Instantiate(mediumAstroidPrefabs, position, Quaternion.identity, mediumTransform);
+                        Instantiate(mediumAstroidPrefabs, position, UnityEngine.Random.rotation, mediumTransform);
                     }
                     else
                     {
 
                         GameObject prefab = PrefabUtility.InstantiatePrefab(mediumAstroidPrefabs, mediumTransform) as GameObject;
                         prefab.transform.position = position;
+                        prefab.transform.rotation = UnityEngine.Random.rotation;
                     }
                 }
                 //Large
@@ -110,12 +114,13 @@ public class LevelGenerator : MonoBehaviour
 
                     if (EditorApplication.isPlaying)
                     {
-                        Instantiate(largeAstroidPrefabs, position, Quaternion.identity, largeTransform);
+                        Instantiate(largeAstroidPrefabs, position, UnityEngine.Random.rotation, largeTransform);
                     }
                     else
                     {
                         GameObject prefab = PrefabUtility.InstantiatePrefab(largeAstroidPrefabs, largeTransform) as GameObject;
                         prefab.transform.position = position;
+                        prefab.transform.rotation = UnityEngine.Random.rotation;
 
                     }
                 }
@@ -139,7 +144,7 @@ public class LevelGenerator : MonoBehaviour
             DestroyImmediate(item);
         }
     }
-    private List<GameObject> GetListOfIntercetionsBetweenToListsOfObjects(List<GameObject> list, List<GameObject> list2)
+    private List<GameObject>  GetListOfIntercetionsBetweenToListsOfObjects(List<GameObject> list, List<GameObject> list2)
     {
         List<GameObject> smallToRemove = new List<GameObject>();
         for (int i = 0; i < list.Count; i++)
@@ -164,7 +169,7 @@ public class LevelGenerator : MonoBehaviour
     }
     private Bounds GetGameObjectsRealBounds(GameObject gameObject)
     {
-       return new Bounds(gameObject.transform.position, gameObject.GetComponent<Collider>().bounds.extents * 2);
+       return new Bounds(gameObject.transform.position, gameObject.GetComponentInChildren<Collider>().bounds.extents * 1.5f);
     }
 
     private void CheckAndRemoveObjectsThatIsInsideEachOther(Transform transform)
