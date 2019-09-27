@@ -5,18 +5,18 @@ using UnityEditor;
 [CustomEditor(typeof(LevelGenerator))]
 public class LevelGeneratorEditor : Editor
 {
-    LevelGenerator levelGenerator { get { return target as LevelGenerator; } }
+    LevelGenerator Generation { get { return target as LevelGenerator; } }
 
     public override void OnInspectorGUI()
     {
         base.OnInspectorGUI();
         if(GUILayout.Button("Spawn Level"))
         {
-            levelGenerator.GenerateLevel();
+            Generation.GenerateLevel();
         }
         if (GUILayout.Button("Clear Level"))
         {
-            levelGenerator.ClearLevel();
+            Generation.ClearLevel();
         }
     }
 }

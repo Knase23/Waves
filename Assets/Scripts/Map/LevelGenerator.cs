@@ -74,13 +74,10 @@ public class LevelGenerator : MonoBehaviour
                 // Small
                 if (noiseMap[x, y] < smallRange.max && noiseMap[x, y] > smallRange.min)
                 {
-                    Vector3 position = new Vector3(centerPositionCorrection.x + x, centerPositionCorrection.y, centerPositionCorrection.z + y);
+                    Vector3 position = new Vector3(centerPositionCorrection.x + x, centerPositionCorrection.y, centerPositionCorrection.z + y) + new Vector3(UnityEngine.Random.Range(-1, 1), 0, UnityEngine.Random.Range(-1, 1));
                     if (EditorApplication.isPlaying)
                     {
-                        
-
                         Instantiate(smallAstroidPrefabs, position, UnityEngine.Random.rotation, smallTransform);
-
                     }
                     else
                     {
@@ -93,11 +90,11 @@ public class LevelGenerator : MonoBehaviour
                 // Medium
                 if (noiseMap[x, y] < mediumRange.max && noiseMap[x, y] > mediumRange.min)
                 {
-                    Vector3 position = new Vector3(centerPositionCorrection.x + x, centerPositionCorrection.y, centerPositionCorrection.z + y);
+                    Vector3 position = new Vector3(centerPositionCorrection.x + x, centerPositionCorrection.y, centerPositionCorrection.z + y) + new Vector3(UnityEngine.Random.Range(-1, 1), 0, UnityEngine.Random.Range(-1, 1));
 
                     if (EditorApplication.isPlaying)
                     {
-                        Instantiate(mediumAstroidPrefabs, position, UnityEngine.Random.rotation, mediumTransform);
+                        Instantiate(mediumAstroidPrefabs, position , UnityEngine.Random.rotation, mediumTransform);
                     }
                     else
                     {
@@ -110,7 +107,7 @@ public class LevelGenerator : MonoBehaviour
                 //Large
                 if (noiseMap[x, y] < largeRange.max && noiseMap[x, y] > largeRange.min)
                 {
-                    Vector3 position = new Vector3(centerPositionCorrection.x + x, centerPositionCorrection.y, centerPositionCorrection.z + y);
+                    Vector3 position = new Vector3(centerPositionCorrection.x + x, centerPositionCorrection.y, centerPositionCorrection.z + y) + new Vector3(UnityEngine.Random.Range(-1, 1), 0, UnityEngine.Random.Range(-1, 1));
 
                     if (EditorApplication.isPlaying)
                     {
@@ -144,12 +141,16 @@ public class LevelGenerator : MonoBehaviour
             DestroyImmediate(item);
         }
     }
+
+
     private List<GameObject>  GetListOfIntercetionsBetweenToListsOfObjects(List<GameObject> list, List<GameObject> list2)
     {
         List<GameObject> smallToRemove = new List<GameObject>();
         for (int i = 0; i < list.Count; i++)
         {
             Bounds mediumBounds = GetGameObjectsRealBounds(list[i]);
+
+            // Want a better way of checking this!
             for (int k = 0; k < list2.Count; k++)
             {
                 if (smallToRemove.Contains(list2[k]))
@@ -167,11 +168,16 @@ public class LevelGenerator : MonoBehaviour
         }
         return smallToRemove;
     }
+
+    /// <summary>
+    /// Help function for determining bounds in Not PlayMode!
+    /// </summary>
+    /// <param name="gameObject"></param>
+    /// <returns></returns>
     private Bounds GetGameObjectsRealBounds(GameObject gameObject)
     {
        return new Bounds(gameObject.transform.position, gameObject.GetComponentInChildren<Collider>().bounds.extents * 1.5f);
     }
-
     private void CheckAndRemoveObjectsThatIsInsideEachOther(Transform transform)
     {
         List<GameObject> astriodsToRemove = CheckListOfGameObjectsIfTheyIntercets(GetAstriodsFromTransform(transform));
@@ -193,6 +199,7 @@ public class LevelGenerator : MonoBehaviour
 
             Bounds astriodBounds = GetGameObjectsRealBounds(list[i]);
 
+            // Want a better way of checking this!
             for (int k = i + 1; k < list.Count; k++)
             {
                 Bounds realBounds = GetGameObjectsRealBounds(list[k]);
