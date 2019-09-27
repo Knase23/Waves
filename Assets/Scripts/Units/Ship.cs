@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Ship : MonoBehaviour, IPlayerShipControl, IDamagable
 {
-    public int speed = 10;
+    public float movmentSpeed = 10;
     public float rotationSpeed = 2;
 
     public Color shipColor = Color.green;
@@ -17,7 +17,8 @@ public class Ship : MonoBehaviour, IPlayerShipControl, IDamagable
     /// <summary>
     /// Storing a picked up action waiting for which action to replace
     /// </summary>
-    public Upgrade storedUpgrade;
+    [SerializeField]
+    private Upgrade storedUpgrade;
 
     /// <summary>
     /// First action that the ship can use!
@@ -43,50 +44,80 @@ public class Ship : MonoBehaviour, IPlayerShipControl, IDamagable
         rb = GetComponent<Rigidbody>();
     }
 
-    public void TakeDamage(float damage)
+    public void StoreUpgrade(Upgrade upgrade)
     {
-        hp.TakeDamage(damage);
+        if (upgrade == null)
+        {
+            storedUpgrade = null;
+            return;
+        }
+
+        if (upgrade is MovmentSpeedUpgrade)
+        {
+            movmentSpeed = upgrade.amount;
+            return;
+        }
+
+        storedUpgrade = upgrade;
+
     }
 
-    public void OnDeath()
-    {
-        Debug.Log(gameObject.name + " - You Dead!");
-        gameObject.SetActive(false);
-    }
+    #region IPlayerShipControl Functions
 
+    #region Action 1
     public void ActionOne()
     {
+        if (actionOne == null)
+            return;
+
         actionOne.Execute();
     }
     public void ActionOneUpgrade()
     {
+        if (actionOne == null)
+            return;
         actionOne.ApplyUpgrade(this, storedUpgrade);
     }
+    #endregion
 
-
+    #region Action 2
     public void ActionTwo()
     {
+        if (actionTwo == null)
+            return;
+
         actionTwo.Execute();
     }
     public void ActionTwoUpgrade()
     {
+        if (actionTwo == null)
+            return;
+
         actionTwo.ApplyUpgrade(this, storedUpgrade);
     }
+    #endregion
 
-
+    #region Action 3
     public void ActionThree()
     {
+        if (actionThree == null)
+            return;
+
         actionThree.Execute();
     }
     public void ActionThreeUpgrade()
     {
+        if (actionThree == null)
+            return;
+
         actionThree.ApplyUpgrade(this, storedUpgrade);
     }
+    #endregion
 
-
+    #region Movement
     public void Move(float horizontal, float vertical)
     {
-        Vector3 increment = vertical * transform.forward * Time.deltaTime * speed;
+        Vector3 increment = vertical * transform.forward * Time.deltaTime * movmentSpeed;
         rb.velocity += increment;
         transform.Rotate(horizontal * Vector3.up * rotationSpeed);
         transform.rotation = Quaternion.Euler(0, transform.rotation.eulerAngles.y, 0);
@@ -96,4 +127,22 @@ public class Ship : MonoBehaviour, IPlayerShipControl, IDamagable
     {
         transform.position = position;
     }
+    #endregion
+
+    #endregion
+
+    #region IDamageble Functions
+    public void TakeDamage(float damage)
+    {
+        hp.TakeDamage(damage);
+    }
+    #endregion;
+
+    #region Health Delegate Functions
+    public void OnDeath()
+    {
+        Debug.Log(gameObject.name + " - You Dead!");
+        gameObject.SetActive(false);
+    }
+    #endregion
 }

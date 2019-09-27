@@ -12,7 +12,7 @@ public class PickUp : MonoBehaviour
 
         if (ship)
         {
-            ship.storedUpgrade = upgrade;
+            ship.StoreUpgrade(upgrade);
             Destroy(gameObject);
         }
 

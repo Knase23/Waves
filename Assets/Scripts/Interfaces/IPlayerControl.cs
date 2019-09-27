@@ -5,16 +5,31 @@ public interface IPlayerShipControl
     /// Activets Action 1
     /// </summary>
     void ActionOne();
-    
+
+    /// <summary>
+    /// Upgrades Action 1
+    /// </summary>
+    void ActionOneUpgrade();
+
     /// <summary>
     /// Activets Action 2
     /// </summary>
     void ActionTwo();
-    
+
+    /// <summary>
+    /// Upgrades Action 1
+    /// </summary>
+    void ActionTwoUpgrade();
+
     /// <summary>
     /// Activets Action 3
     /// </summary>
     void ActionThree();
+
+    /// <summary>
+    /// Upgrades Action 1
+    /// </summary>
+    void ActionThreeUpgrade();
 
     /// <summary>
     /// Used by the client side of;

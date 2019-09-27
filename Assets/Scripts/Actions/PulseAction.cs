@@ -19,18 +19,21 @@ public class PulseAction : Action
 
     public override void ApplyUpgrade(Ship ship, Upgrade upgrade)
     {
-
         if (upgrade is DamageUpgrade)
         {
-            DamageUpgrade damageUpgrade = upgrade as DamageUpgrade;
-            power += damageUpgrade.amount;
+            power += upgrade.amount;
         }
 
         if (upgrade is CoolDownUpgrade)
         {
-            CoolDownUpgrade cooldownUpgrade = upgrade as CoolDownUpgrade;
-            cooldownTime -= cooldownUpgrade.amount;
+            cooldownTime -= upgrade.amount;
         }
 
+        if (upgrade is ActionSpeedUpgrade)
+        {
+            speed -= upgrade.amount;
+        }
+
+        base.ApplyUpgrade(ship,upgrade);
     }
 }
