@@ -14,7 +14,14 @@ public class LevelGeneratorEditor : Editor
         {
             if (EditorApplication.isPlaying)
             {
-                Generation.VisualGenerateLevel();
+                if (Generation.ShowPresentationSphere)
+                {
+                    Generation.VisualGenerateLevel();
+                }
+                else
+                {
+                    Generation.GenerateLevel();
+                }
             }
             else
             {

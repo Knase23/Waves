@@ -40,10 +40,19 @@ public class LevelGenerator : MonoBehaviour
 
     [Header("Tolerance")]
     public int maxNumberOfFailedPlacements = 10;
-    public int numberOfLargeSamples = 50;
-
+    public float sampleMultiplier = 1.5f;
+    public int numberOfLargeWanted = 50;
+    public int numberOfMediumWanted = 50;
+    public int numberOfSmallWanted = 50;
     [Header("Debugging")]
-    public int countOfConfirmed = 0;
+    public int totalOfConfirmedObjects = 0;
+    public bool ShowPresentationSphere = true;
+    public float presentationSphereSize = 5;
+    private Vector3 presentationPosition = Vector3.zero;
+    private Vector3 presentationOtherComparisonPosition = Vector3.zero;
+    private Color presentationColor = Color.white;
+    private Color presentationComparisonColor = Color.white;
+
 
     private List<GameObject> confirmedPlacements = new List<GameObject>();
     /// <summary>
@@ -59,11 +68,13 @@ public class LevelGenerator : MonoBehaviour
          *      - The check sees there is no other confirmed samples within its area of placment Influence.
          *  If valid, its position is set. And that sample is confirmed.
          */
-        countOfConfirmed = 0;
-        SampleLevel(numberOfLargeSamples, largeAstroidPrefabs, largeTransform, maxNumberOfFailedPlacements);
-
-
-        
+        totalOfConfirmedObjects = 0;
+        //Large
+        SampleGeneration(numberOfLargeWanted, largeAstroidPrefabs, largeTransform, maxNumberOfFailedPlacements);
+        //Medium
+        //SampleGeneration(numberOfLargeWanted, largeAstroidPrefabs, largeTransform, maxNumberOfFailedPlacements);
+        //Small
+        //SampleGeneration(numberOfLargeWanted, largeAstroidPrefabs, largeTransform, maxNumberOfFailedPlacements);
 
         // All astriod can have a minimum distance from the borders by 1 unit
         // Asteriods have a set Radius, determined by their prefabs Asteriod scripts placement radius
@@ -82,6 +93,8 @@ public class LevelGenerator : MonoBehaviour
         * There minimum distance from a Large Asteriod can be there Placement Radius + LargeTolerence 
         * There minimum distance from a Medium Asteriod can be there Placement Radius + MediumTolerence
         */
+
+
         // Small
         /*
          * The Small must have atleast 1 Medium or Large asteriod near it
@@ -101,16 +114,20 @@ public class LevelGenerator : MonoBehaviour
     public void VisualGenerateLevel()
     {
         ClearLevel();
-        countOfConfirmed = 0;
-        StartCoroutine(VisualRepresentationOfSampling(numberOfLargeSamples, largeAstroidPrefabs, largeTransform, maxNumberOfFailedPlacements));
+        totalOfConfirmedObjects = 0;
+        StartCoroutine(VisualRepresentationOfSampling(numberOfLargeWanted, largeAstroidPrefabs, largeTransform, maxNumberOfFailedPlacements));
     }
-    public void SampleLevel(int numberOfSamples,GameObject preFab,Transform hieararcyHolder ,int numberOfRejections = 10)
+
+    public void SampleGeneration(int numberOfActualDesiredObjects, GameObject preFab,Transform hieararcyHolder ,int numberOfRejections = 10)
     {
+        int numberOfSamples = (int)(numberOfActualDesiredObjects * sampleMultiplier);
+        Debug.Log("Number Of Samples for " + preFab.name + " :" + numberOfSamples);
         Asteriod preFabAsteriod = preFab.GetComponent<Asteriod>();
-
         Vector3 position;// = new Vector3(UnityEngine.Random.Range(-mapSize.x, mapSize.x), 0 ,UnityEngine.Random.Range(-mapSize.y, mapSize.y));
+        int numberOfDesiredObjects = numberOfActualDesiredObjects;
+        int countOfConfirmed = 0;
 
-        for (int i = 0; i < numberOfSamples; i++)
+        for (int i = 0; i < numberOfSamples && countOfConfirmed < numberOfDesiredObjects; i++)
         {
             bool validPlacement = false;
             bool rejected = false;
@@ -137,34 +154,80 @@ public class LevelGenerator : MonoBehaviour
 
             if (rejected)
             {
+                numberOfDesiredObjects--;
                 continue;
             }
 
             countOfConfirmed++;
+            totalOfConfirmedObjects++;
             confirmedPlacements.Add(Instantiate(preFab,position,UnityEngine.Random.rotation,hieararcyHolder));
         }
         
     }
-
-    public IEnumerator VisualRepresentationOfSampling(int numberOfSamples, GameObject preFab, Transform hieararcyHolder, int numberOfRejections = 10)
+    //This sould have the same code as SampleLevel
+    #region SAMPLING : Showing What the code does Visualy in the Editor;
+    public IEnumerator VisualRepresentationOfSampling(int numberOfActualDesiredObjects, GameObject preFab, Transform hieararcyHolder, int numberOfRejections = 10)
     {
+        int numberOfSamples = (int)(numberOfActualDesiredObjects * sampleMultiplier);
+        Debug.Log("Number Of Samples for " + preFab.name + " :" + numberOfSamples);
         Asteriod preFabAsteriod = preFab.GetComponent<Asteriod>();
-
+        presentationSphereSize = preFabAsteriod.radius;
         Vector3 position;
-        GameObject presentationObject = Instantiate(preFab);
-
-        for (int i = 0; i < numberOfSamples; i++)
+        int numberOfDesiredObjects = numberOfActualDesiredObjects;
+        int countOfConfirmed = 0;
+        for (int i = 0; i < numberOfSamples && countOfConfirmed < numberOfDesiredObjects; i++)
         {
             bool validPlacement = false;
             bool rejected = false;
             int countOfFailedPlacement = 0;
+            
+            //Only for the Visual
+            presentationColor = Color.yellow;
+
             do
             {
                 position = new Vector3(UnityEngine.Random.Range(-mapSize.x, mapSize.x), 0, UnityEngine.Random.Range(-mapSize.y, mapSize.y));
-                presentationObject.transform.position = position;
+                presentationPosition = position;
+                presentationOtherComparisonPosition = position;
+                #region Code From Asteriod.ValidatePlacement(Vector3 Position)
+                bool result = true;
+                //Code that is inside Asteriod.ValidatePlacement(Vector3 position);
+                if (!Physics.CheckSphere(position, preFabAsteriod.radius))
+                {
+                    Collider[] listOfHits = Physics.OverlapSphere(position, preFabAsteriod.searchRadius);
+                    for (int k = 0; k < listOfHits.Length; k++)
+                    {
+                        presentationComparisonColor = Color.yellow;
+                        if (listOfHits[k].gameObject == gameObject)
+                        {
+                            continue;
+                        }
+                        if (listOfHits[k].tag != "Asteriod")
+                        {
+                            continue;
+                        }
+                        presentationOtherComparisonPosition = listOfHits[k].transform.position;
+                        yield return new WaitForSecondsRealtime(0.1f);
+                        if (!preFabAsteriod.ValidationOfPlacement(position, listOfHits[k].GetComponent<Asteriod>()))
+                        {
+                            result = false;
+                            presentationComparisonColor = Color.red;
+                            yield return new WaitForSecondsRealtime(0.1f);
+                            break;
+                        }
+                        presentationComparisonColor = Color.green;
+                        yield return new WaitForSecondsRealtime(0.1f);
+                    }
+                }
+                else
+                {
+                    result = false;
+                }
+                // Placement is valid, you can place the Asteriod there
+                #endregion
 
                 //Here it tries to Validate it
-                if (preFabAsteriod.ValidatePlacement(position))
+                if (result)
                 {
                     validPlacement = true;
                     continue;
@@ -177,28 +240,34 @@ public class LevelGenerator : MonoBehaviour
                     continue;
                 }
                 countOfFailedPlacement++;
-                yield return new WaitForSecondsRealtime(0.1f);
+                
+                //Only for the Visual
+                yield return new WaitForSecondsRealtime(0.05f);
 
             } while (!validPlacement);
 
-
-            //Make the presentation object green if it found a place to put spawn a asteriod on. 
-            // Red if it rejected it-
-            // Yellow when it is searching for a valid place
             if (rejected)
             {
+                numberOfDesiredObjects--;
+
+                //Only for the Visual
+                presentationColor = Color.red;
+                yield return new WaitForSecondsRealtime(0.1f);
+
                 continue;
             }
+            //Only for the Visual
+            presentationColor = Color.green;
+            yield return new WaitForSecondsRealtime(0.2f);
 
             countOfConfirmed++;
+            totalOfConfirmedObjects++;
             confirmedPlacements.Add(Instantiate(preFab, position, UnityEngine.Random.rotation, hieararcyHolder));
         }
-
-        Destroy(presentationObject);
-
         yield break;
     }
-
+    #endregion
+    
     /// <summary>
     /// Clears all astriods inside the Astriod list. AKA makes the map empty
     /// </summary>
@@ -238,6 +307,16 @@ public class LevelGenerator : MonoBehaviour
         // This is a Recursive Function, it will go though all gameobjects under the given transform and added them to the list
         AddGameObjectWithTagFormTransform("Asteriod", transform, ref list);
         return list;
+    }
+    private void OnDrawGizmos()
+    {
+        if(ShowPresentationSphere)
+        {
+            Gizmos.color = presentationColor;
+            Gizmos.DrawSphere(presentationPosition, presentationSphereSize);
+            Gizmos.color = presentationComparisonColor;
+            Gizmos.DrawLine(presentationPosition, presentationOtherComparisonPosition);
+        }
     }
 
 

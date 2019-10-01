@@ -2,18 +2,20 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class LargeAsteriod : Asteriod
+public class MediumAsteriod : Asteriod
 {
-    public float minimumDistanceFromOtherLargeAsteriod = 1;
 
     public override bool ValidationOfPlacement(Vector3 position, Asteriod other)
     {
-        //Is it the minimum Distance from each other
-        if (SpehereIntersecting(position,other, minimumDistanceFromOtherLargeAsteriod))
+        if (SpehereIntersecting(position, other, radius))
         {
             return false;
         }
+        if(other is LargeAsteriod)
+        {
 
+        }
         return true;
     }
 }
+
