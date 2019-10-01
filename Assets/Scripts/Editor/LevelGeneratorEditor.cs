@@ -10,9 +10,16 @@ public class LevelGeneratorEditor : Editor
     public override void OnInspectorGUI()
     {
         base.OnInspectorGUI();
-        if(GUILayout.Button("Spawn Level"))
+        if (GUILayout.Button("Spawn Level"))
         {
-            Generation.GenerateLevel();
+            if (EditorApplication.isPlaying)
+            {
+                Generation.VisualGenerateLevel();
+            }
+            else
+            {
+                Generation.GenerateLevel();
+            }
         }
         if (GUILayout.Button("Clear Level"))
         {
