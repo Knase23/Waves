@@ -92,7 +92,7 @@ MonoBehaviour:
   radius: 6
   searchRadius: 30
   ShowSearhRadius: 0
-  minimumDistanceFromOtherLargeAsteriod: 8
+  minimumDistanceFromOtherLargeAsteriod: 4
 --- !u!64 &4761361657843099191
 MeshCollider:
   m_ObjectHideFlags: 0

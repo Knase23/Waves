@@ -13,25 +13,25 @@ public abstract class Asteriod : MonoBehaviour
 
     public bool ValidatePlacement(Vector3 position)
     {
-        Collider[] listOfHits = Physics.OverlapSphere(position, searchRadius);
-        for (int i = 0; i < listOfHits.Length; i++)
+        if (!Physics.CheckSphere(position, radius))
         {
-            if(listOfHits[i].gameObject == gameObject)
+            Collider[] listOfHits = Physics.OverlapSphere(position, searchRadius);
+            for (int i = 0; i < listOfHits.Length; i++)
             {
-                continue;
-            }
-            if (listOfHits[i].tag != "Asteriod")
-            {
-                continue;
-            }
-            if(ValidationOfPlacement(position, listOfHits[i].GetComponent<Asteriod>()))
-            {
-                return false;
-            }
+                if (listOfHits[i].tag != "Asteriod")
+                {
+                    continue;
+                }
+                if (!ValidationOfPlacement(position, listOfHits[i].GetComponent<Asteriod>()))
+                {
+                    return false;
+                }
 
+            }
+            return true;
         }
         // Placement is valid, you can place the Asteriod there
-        return true;
+        return false;
     }
 
     /// <summary>
@@ -63,8 +63,7 @@ public abstract class Asteriod : MonoBehaviour
     {
         Vector3 vectorBetweenAsteriods = other.transform.position - position;
         float diffrence = Mathf.Abs(other.radius + radius - vectorBetweenAsteriods.magnitude);
-
-        if(diffrence <= distanceThreshold)
+        if(diffrence >= distanceThreshold)
         {
             return false;
         }

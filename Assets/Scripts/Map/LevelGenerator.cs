@@ -52,7 +52,7 @@ public class LevelGenerator : MonoBehaviour
     private Vector3 presentationOtherComparisonPosition = Vector3.zero;
     private Color presentationColor = Color.white;
     private Color presentationComparisonColor = Color.white;
-
+    private bool displayPrenentation = false;
 
     private List<GameObject> confirmedPlacements = new List<GameObject>();
     /// <summary>
@@ -168,6 +168,7 @@ public class LevelGenerator : MonoBehaviour
     #region SAMPLING : Showing What the code does Visualy in the Editor;
     public IEnumerator VisualRepresentationOfSampling(int numberOfActualDesiredObjects, GameObject preFab, Transform hieararcyHolder, int numberOfRejections = 10)
     {
+        displayPrenentation = true;
         int numberOfSamples = (int)(numberOfActualDesiredObjects * sampleMultiplier);
         Debug.Log("Number Of Samples for " + preFab.name + " :" + numberOfSamples);
         Asteriod preFabAsteriod = preFab.GetComponent<Asteriod>();
@@ -264,6 +265,7 @@ public class LevelGenerator : MonoBehaviour
             totalOfConfirmedObjects++;
             confirmedPlacements.Add(Instantiate(preFab, position, UnityEngine.Random.rotation, hieararcyHolder));
         }
+        displayPrenentation = false;
         yield break;
     }
     #endregion
@@ -310,12 +312,14 @@ public class LevelGenerator : MonoBehaviour
     }
     private void OnDrawGizmos()
     {
-        if(ShowPresentationSphere)
+        if(ShowPresentationSphere && displayPrenentation)
         {
-            Gizmos.color = presentationColor;
-            Gizmos.DrawSphere(presentationPosition, presentationSphereSize);
-            Gizmos.color = presentationComparisonColor;
-            Gizmos.DrawLine(presentationPosition, presentationOtherComparisonPosition);
+            
+                Gizmos.color = presentationColor;
+                Gizmos.DrawSphere(presentationPosition, presentationSphereSize);
+                Gizmos.color = presentationComparisonColor;
+                Gizmos.DrawLine(presentationPosition, presentationOtherComparisonPosition);
+            
         }
     }
 
