@@ -42,7 +42,7 @@ GameObject:
   - component: {fileID: 752884784202401205}
   - component: {fileID: 4849594953638342442}
   - component: {fileID: 3996607146110468270}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Large Astriod
   m_TagString: Asteriod
   m_Icon: {fileID: 0}

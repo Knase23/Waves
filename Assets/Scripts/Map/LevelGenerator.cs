@@ -72,9 +72,9 @@ public class LevelGenerator : MonoBehaviour
         //Large
         SampleGeneration(numberOfLargeWanted, largeAstroidPrefabs, largeTransform, maxNumberOfFailedPlacements);
         //Medium
-        //SampleGeneration(numberOfLargeWanted, largeAstroidPrefabs, largeTransform, maxNumberOfFailedPlacements);
+        SampleGeneration(numberOfMediumWanted, mediumAstroidPrefabs, mediumTransform, maxNumberOfFailedPlacements);
         //Small
-        //SampleGeneration(numberOfLargeWanted, largeAstroidPrefabs, largeTransform, maxNumberOfFailedPlacements);
+        SampleGeneration(numberOfSmallWanted, smallAstroidPrefabs, smallTransform, maxNumberOfFailedPlacements);
 
         // All astriod can have a minimum distance from the borders by 1 unit
         // Asteriods have a set Radius, determined by their prefabs Asteriod scripts placement radius
@@ -115,7 +115,23 @@ public class LevelGenerator : MonoBehaviour
     {
         ClearLevel();
         totalOfConfirmedObjects = 0;
-        StartCoroutine(VisualRepresentationOfSampling(numberOfLargeWanted, largeAstroidPrefabs, largeTransform, maxNumberOfFailedPlacements));
+        StartCoroutine(StartGenerate());
+        
+    }
+    Coroutine coroutine = null;
+    public IEnumerator StartGenerate()
+    {
+
+        coroutine = StartCoroutine(VisualRepresentationOfSampling(numberOfLargeWanted, largeAstroidPrefabs, largeTransform, maxNumberOfFailedPlacements));
+        yield return new WaitUntil(()=>coroutine == null);
+
+        coroutine = StartCoroutine(VisualRepresentationOfSampling(numberOfMediumWanted, mediumAstroidPrefabs, mediumTransform, maxNumberOfFailedPlacements));
+
+        yield return new WaitUntil(()=>coroutine == null);
+
+        coroutine = StartCoroutine(VisualRepresentationOfSampling(numberOfSmallWanted, smallAstroidPrefabs, smallTransform, maxNumberOfFailedPlacements));
+        yield return new WaitUntil(() => coroutine == null);
+        Debug.Log("Level Generation Complete");
     }
 
     public void SampleGeneration(int numberOfActualDesiredObjects, GameObject preFab,Transform hieararcyHolder ,int numberOfRejections = 10)
@@ -123,7 +139,7 @@ public class LevelGenerator : MonoBehaviour
         int numberOfSamples = (int)(numberOfActualDesiredObjects * sampleMultiplier);
         Debug.Log("Number Of Samples for " + preFab.name + " :" + numberOfSamples);
         Asteriod preFabAsteriod = preFab.GetComponent<Asteriod>();
-        Vector3 position;// = new Vector3(UnityEngine.Random.Range(-mapSize.x, mapSize.x), 0 ,UnityEngine.Random.Range(-mapSize.y, mapSize.y));
+        Vector3 position;
         int numberOfDesiredObjects = numberOfActualDesiredObjects;
         int countOfConfirmed = 0;
 
@@ -195,6 +211,11 @@ public class LevelGenerator : MonoBehaviour
                 //Code that is inside Asteriod.ValidatePlacement(Vector3 position);
                 if (!Physics.CheckSphere(position, preFabAsteriod.radius))
                 {
+                    if (preFab == smallAstroidPrefabs)
+                    {
+                        SmallAsteriod smallAsteriod = preFabAsteriod as SmallAsteriod;
+                        smallAsteriod.largeOrMediumNearIt = 0;
+                    }
                     Collider[] listOfHits = Physics.OverlapSphere(position, preFabAsteriod.searchRadius);
                     for (int k = 0; k < listOfHits.Length; k++)
                     {
@@ -208,17 +229,26 @@ public class LevelGenerator : MonoBehaviour
                             continue;
                         }
                         presentationOtherComparisonPosition = listOfHits[k].transform.position;
-                        yield return new WaitForSecondsRealtime(0.1f);
+                        yield return new WaitForSecondsRealtime(2f / numberOfSamples);
                         if (!preFabAsteriod.ValidationOfPlacement(position, listOfHits[k].GetComponent<Asteriod>()))
                         {
                             result = false;
                             presentationComparisonColor = Color.red;
-                            yield return new WaitForSecondsRealtime(0.1f);
+                            yield return new WaitForSecondsRealtime(2f / numberOfSamples);
                             break;
                         }
                         presentationComparisonColor = Color.green;
-                        yield return new WaitForSecondsRealtime(0.1f);
+                        yield return new WaitForSecondsRealtime(2f/ numberOfSamples);
                     }
+                    if(preFab == smallAstroidPrefabs)
+                    {
+                        SmallAsteriod smallAsteriod = preFabAsteriod as SmallAsteriod;
+                        if (smallAsteriod.largeOrMediumNearIt < 1)
+                        {
+                            result = false;
+                        }
+                    }
+
                 }
                 else
                 {
@@ -243,7 +273,7 @@ public class LevelGenerator : MonoBehaviour
                 countOfFailedPlacement++;
                 
                 //Only for the Visual
-                yield return new WaitForSecondsRealtime(0.05f);
+                yield return new WaitForSecondsRealtime(1f / numberOfSamples);
 
             } while (!validPlacement);
 
@@ -253,19 +283,20 @@ public class LevelGenerator : MonoBehaviour
 
                 //Only for the Visual
                 presentationColor = Color.red;
-                yield return new WaitForSecondsRealtime(0.1f);
+                yield return new WaitForSecondsRealtime(2f / numberOfSamples);
 
                 continue;
             }
             //Only for the Visual
             presentationColor = Color.green;
-            yield return new WaitForSecondsRealtime(0.2f);
+            yield return new WaitForSecondsRealtime(3f / numberOfSamples);
 
             countOfConfirmed++;
             totalOfConfirmedObjects++;
             confirmedPlacements.Add(Instantiate(preFab, position, UnityEngine.Random.rotation, hieararcyHolder));
         }
         displayPrenentation = false;
+        coroutine = null;
         yield break;
     }
     #endregion

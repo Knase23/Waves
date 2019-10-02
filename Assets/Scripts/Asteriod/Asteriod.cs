@@ -10,32 +10,35 @@ public abstract class Asteriod : MonoBehaviour
 
     public bool ShowSearhRadius = true;
 
-
-    public bool ValidatePlacement(Vector3 position)
+    // Everything that is true for All Asteriods.
+    // Can be overided but it needs to have base.ValidatePlacement with it. 
+    public virtual bool ValidatePlacement(Vector3 position)
     {
-        if (!Physics.CheckSphere(position, radius))
+        if (Physics.CheckSphere(position, radius, 1 << 9))
         {
-            Collider[] listOfHits = Physics.OverlapSphere(position, searchRadius);
-            for (int i = 0; i < listOfHits.Length; i++)
-            {
-                if (listOfHits[i].tag != "Asteriod")
-                {
-                    continue;
-                }
-                if (!ValidationOfPlacement(position, listOfHits[i].GetComponent<Asteriod>()))
-                {
-                    return false;
-                }
+            return false;
+        }
 
+        Collider[] listOfHits = Physics.OverlapSphere(position, searchRadius, 1 << 9);
+        for (int i = 0; i < listOfHits.Length; i++)
+        {
+            if (listOfHits[i].tag != "Asteriod")
+            {
+                continue;
             }
-            return true;
+            if (!ValidationOfPlacement(position, listOfHits[i].GetComponent<Asteriod>()))
+            {
+                return false;
+            }
+
         }
         // Placement is valid, you can place the Asteriod there
-        return false;
+        return true;
+
     }
 
     /// <summary>
-    /// Checks if it can be placed on that position
+    /// Checks if it can be placed on that position for a certain Asteriod.
     /// </summary>
     /// <param name="postion"></param>
     /// <returns></returns>
@@ -63,7 +66,7 @@ public abstract class Asteriod : MonoBehaviour
     {
         Vector3 vectorBetweenAsteriods = other.transform.position - position;
         float diffrence = Mathf.Abs(other.radius + radius - vectorBetweenAsteriods.magnitude);
-        if(diffrence >= distanceThreshold)
+        if (diffrence >= distanceThreshold)
         {
             return false;
         }
