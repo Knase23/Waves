@@ -1,6 +1,6 @@
 ﻿using System;
 using UnityEngine;
-static class Sampling
+public static class Sampling
 {
     public static void SampleGenerating(int numberOfActualDesiredObjects,Sample sampleRules, GameObject prefab, Vector3 maxPosition, Vector3 minPosition, Transform parent = null, float sampleMultiplier = 1.5f, int numberOfRejections = 10)
     {
