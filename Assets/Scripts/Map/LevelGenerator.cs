@@ -13,7 +13,7 @@ public class LevelGenerator : MonoBehaviour
 
     public Vector2Int mapSize;
 
-    
+
 
     //[Header("Perlin noise")]
     //public float noiseZoom;
@@ -116,29 +116,29 @@ public class LevelGenerator : MonoBehaviour
         ClearLevel();
         totalOfConfirmedObjects = 0;
         StartCoroutine(StartGenerate());
-        
+
     }
     Coroutine coroutine = null;
     public IEnumerator StartGenerate()
     {
 
         coroutine = StartCoroutine(VisualRepresentationOfSampling(numberOfLargeWanted, largeAstroidPrefabs, largeTransform, maxNumberOfFailedPlacements));
-        yield return new WaitUntil(()=>coroutine == null);
+        yield return new WaitUntil(() => coroutine == null);
 
         coroutine = StartCoroutine(VisualRepresentationOfSampling(numberOfMediumWanted, mediumAstroidPrefabs, mediumTransform, maxNumberOfFailedPlacements));
 
-        yield return new WaitUntil(()=>coroutine == null);
+        yield return new WaitUntil(() => coroutine == null);
 
         coroutine = StartCoroutine(VisualRepresentationOfSampling(numberOfSmallWanted, smallAstroidPrefabs, smallTransform, maxNumberOfFailedPlacements));
         yield return new WaitUntil(() => coroutine == null);
         Debug.Log("Level Generation Complete");
     }
 
-    public void SampleGeneration(int numberOfActualDesiredObjects, GameObject preFab,Transform hieararcyHolder ,int numberOfRejections = 10)
+    public void SampleGeneration(int numberOfActualDesiredObjects, GameObject prefab, Transform parent, int numberOfRejections = 10)
     {
         int numberOfSamples = (int)(numberOfActualDesiredObjects * sampleMultiplier);
-        Debug.Log("Number Of Samples for " + preFab.name + " :" + numberOfSamples);
-        Asteriod preFabAsteriod = preFab.GetComponent<Asteriod>();
+        Debug.Log("Number Of Samples for " + prefab.name + " :" + numberOfSamples);
+        Asteriod preFabAsteriod = prefab.GetComponent<Asteriod>();
         Vector3 position;
         int numberOfDesiredObjects = numberOfActualDesiredObjects;
         int countOfConfirmed = 0;
@@ -176,9 +176,15 @@ public class LevelGenerator : MonoBehaviour
 
             countOfConfirmed++;
             totalOfConfirmedObjects++;
-            confirmedPlacements.Add(Instantiate(preFab,position,UnityEngine.Random.rotation,hieararcyHolder));
+            confirmedPlacements.Add(SpawnInPrefab(prefab, position, parent));
         }
-        
+
+    }
+
+    GameObject SpawnInPrefab(GameObject prefab, Vector3 position, Transform parent)
+    {
+        GameObject gameObject = Instantiate(prefab, position, UnityEngine.Random.rotation, parent);
+        return gameObject;
     }
     //This sould have the same code as SampleLevel
     #region SAMPLING : Showing What the code does Visualy in the Editor;
@@ -197,7 +203,7 @@ public class LevelGenerator : MonoBehaviour
             bool validPlacement = false;
             bool rejected = false;
             int countOfFailedPlacement = 0;
-            
+
             //Only for the Visual
             presentationColor = Color.yellow;
 
@@ -238,9 +244,9 @@ public class LevelGenerator : MonoBehaviour
                             break;
                         }
                         presentationComparisonColor = Color.green;
-                        yield return new WaitForSecondsRealtime(2f/ numberOfSamples);
+                        yield return new WaitForSecondsRealtime(2f / numberOfSamples);
                     }
-                    if(preFab == smallAstroidPrefabs)
+                    if (preFab == smallAstroidPrefabs)
                     {
                         SmallAsteriod smallAsteriod = preFabAsteriod as SmallAsteriod;
                         if (smallAsteriod.largeOrMediumNearIt < 1)
@@ -271,7 +277,7 @@ public class LevelGenerator : MonoBehaviour
                     continue;
                 }
                 countOfFailedPlacement++;
-                
+
                 //Only for the Visual
                 yield return new WaitForSecondsRealtime(1f / numberOfSamples);
 
@@ -300,7 +306,7 @@ public class LevelGenerator : MonoBehaviour
         yield break;
     }
     #endregion
-    
+
     /// <summary>
     /// Clears all astriods inside the Astriod list. AKA makes the map empty
     /// </summary>
@@ -343,14 +349,14 @@ public class LevelGenerator : MonoBehaviour
     }
     private void OnDrawGizmos()
     {
-        if(ShowPresentationSphere && displayPrenentation)
+        if (ShowPresentationSphere && displayPrenentation)
         {
-            
-                Gizmos.color = presentationColor;
-                Gizmos.DrawSphere(presentationPosition, presentationSphereSize);
-                Gizmos.color = presentationComparisonColor;
-                Gizmos.DrawLine(presentationPosition, presentationOtherComparisonPosition);
-            
+
+            Gizmos.color = presentationColor;
+            Gizmos.DrawSphere(presentationPosition, presentationSphereSize);
+            Gizmos.color = presentationComparisonColor;
+            Gizmos.DrawLine(presentationPosition, presentationOtherComparisonPosition);
+
         }
     }
 
