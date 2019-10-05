@@ -12,11 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 0}
   m_Name: Medium Asteriod Placement Rules
   m_EditorClassIdentifier: Assembly-CSharp::MediumAsteriodSample
-  radius: 0
-  searchRadius: 0
+  radius: 1.55
+  searchRadius: 5
   mask:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 512
   queryTriggerInteraction: 0
-  largeAsteriodThreshold: 0
-  mediumAsteriodThreshold: 0
+  largeAsteriodThreshold: 2
+  mediumAsteriodThreshold: 4

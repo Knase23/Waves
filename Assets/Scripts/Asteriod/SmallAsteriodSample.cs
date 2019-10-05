@@ -6,6 +6,7 @@ public class SmallAsteriodSample : Sample
 {
     // Small
     /*
+     * 
      * The Small must have atleast 1 Medium or Large asteriod near it
      * 
      * There minimum distance from a Large Asteriod can be there Placement Radius + LargeMinTolerence 

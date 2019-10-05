@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 0}
   m_Name: Large Asteriod Placement Rules
   m_EditorClassIdentifier: Assembly-CSharp::LargeAsteriodSample
-  radius: 0
-  searchRadius: 0
+  radius: 6
+  searchRadius: 30
   mask:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 512
   queryTriggerInteraction: 0
-  minimumDistanceFromOtherLargeAsteriod: 0
+  minimumDistanceFromOtherLargeAsteriod: 4

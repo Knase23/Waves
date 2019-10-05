@@ -7,6 +7,7 @@ public class LargeAsteriodSample : Sample
 {
     // Large 
     /*
+     * 
      * They have a set Radius, determined by the prefabs Asteriod scripts placement radius
      * There minimum distance from a Another Large Asteriod can be there Placement Radius + Tolerence 
      */

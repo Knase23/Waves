@@ -12,14 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 0}
   m_Name: Small Asteriod Placement Rules
   m_EditorClassIdentifier: Assembly-CSharp::SmallAsteriodSample
-  radius: 0
-  searchRadius: 0
+  radius: 0.79
+  searchRadius: 15
   mask:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 512
   queryTriggerInteraction: 0
-  largeAsteriodMinThreshold: 0
-  mediumAsteriodMinThreshold: 0
-  largeAsteriodMaxThreshold: 0
-  mediumAsteriodMaxThreshold: 0
-  largeOrMediumNearIt: 0
+  largeAsteriodMinThreshold: 1
+  mediumAsteriodMinThreshold: 0.5
+  largeAsteriodMaxThreshold: 6
+  mediumAsteriodMaxThreshold: 7
