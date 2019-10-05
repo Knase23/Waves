@@ -89,10 +89,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 08b48adc285b39c41ba3d433bc71262b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  radius: 6
-  searchRadius: 30
+  placementRules: {fileID: 11400000, guid: 83ff5be3affff384aa3d6d9960ab8174, type: 2}
   ShowSearhRadius: 0
-  minimumDistanceFromOtherLargeAsteriod: 4
 --- !u!64 &4761361657843099191
 MeshCollider:
   m_ObjectHideFlags: 0

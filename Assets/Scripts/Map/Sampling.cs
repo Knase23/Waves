@@ -23,13 +23,21 @@ public static class Sampling
                 float z = UnityEngine.Random.Range(minPosition.z, maxPosition.z);
                 
                 randomPosition = new Vector3(x,y,z);
-                
+                if(!sampleRules.PreValidation(randomPosition))
+                {
+
+                }
+
                 if (sampleRules.ValidatePlacement(randomPosition))
                 {
                     validPositionState = true;
                     continue;
                 }
 
+                if (!sampleRules.PostValidation(randomPosition))
+                {
+
+                }
                 // Exit if it does not find a valid place
                 if (countOfFailedPlacement >= numberOfRejections)
                 {
@@ -50,7 +58,7 @@ public static class Sampling
             if (validPositionState)
             {
                 //Spawn in Object
-                GameObject.Instantiate(prefab, parent);
+                GameObject.Instantiate(prefab, randomPosition, Quaternion.identity,parent);
             }
         }
     }
@@ -58,8 +66,7 @@ public static class Sampling
 /// <summary>
 /// Base class for Sample, inherent this class to setup up rules for objects you want to validate there placement.
 /// </summary>
-[Serializable]
-public abstract class Sample
+public abstract class Sample :ScriptableObject
 {
     /// <summary>
     /// Radius of nono-zone
@@ -136,11 +143,23 @@ public abstract class Sample
     {
         return true;
     }
-}
-public class SmallAsteriodSample : Sample
-{
-    public override bool Validation(Vector3 position, Collider collider)
+
+    /// <summary>
+    /// True if it is intersecting
+    /// </summary>
+    /// <param name="position"></param>
+    /// <param name="other"></param>
+    /// <param name="distanceThreshold"></param>
+    /// <returns>Is it intersecting with that object</returns>
+    public bool SpehereIntersecting(Vector3 position, Asteriod other, float distanceThreshold)
     {
-        throw new System.NotImplementedException();
+        Vector3 vectorBetweenAsteriods = other.transform.position - position;
+        float diffrence = Mathf.Abs(other.placementRules.radius + radius - vectorBetweenAsteriods.magnitude);
+        if (diffrence >= distanceThreshold)
+        {
+            return false;
+        }
+
+        return true;
     }
 }

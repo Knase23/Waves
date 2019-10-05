@@ -72,14 +72,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 66c3791ddb888d04eb6d38caaa94c7fc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  radius: 0.79
-  searchRadius: 15
+  placementRules: {fileID: 11400000, guid: a5d27173d3ab51a4591d257c950ef306, type: 2}
   ShowSearhRadius: 0
-  largeAsteriodMinThreshold: 1
-  mediumAsteriodMinThreshold: 0.5
-  largeAsteriodMaxThreshold: 6
-  mediumAsteriodMaxThreshold: 7
-  largeOrMediumNearIt: 0
 --- !u!1 &9001425969778303213
 GameObject:
   m_ObjectHideFlags: 0

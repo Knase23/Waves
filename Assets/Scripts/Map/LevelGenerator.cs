@@ -70,116 +70,82 @@ public class LevelGenerator : MonoBehaviour
          */
         totalOfConfirmedObjects = 0;
         //Large
-        SampleGeneration(numberOfLargeWanted, largeAstroidPrefabs, largeTransform, maxNumberOfFailedPlacements);
+        Sampling.SampleGenerating(numberOfLargeWanted, largeAstroidPrefabs.GetComponent<Asteriod>().placementRules, largeAstroidPrefabs, new Vector3(mapSize.x, 0, mapSize.y), new Vector3(-mapSize.x, 0, -mapSize.y), largeTransform, numberOfRejections: maxNumberOfFailedPlacements);
         //Medium
-        SampleGeneration(numberOfMediumWanted, mediumAstroidPrefabs, mediumTransform, maxNumberOfFailedPlacements);
+        Sampling.SampleGenerating(numberOfMediumWanted, mediumAstroidPrefabs.GetComponent<Asteriod>().placementRules, mediumAstroidPrefabs, new Vector3(mapSize.x, 0, mapSize.y), new Vector3(-mapSize.x, 0, -mapSize.y), mediumTransform, numberOfRejections: maxNumberOfFailedPlacements);
         //Small
-        SampleGeneration(numberOfSmallWanted, smallAstroidPrefabs, smallTransform, maxNumberOfFailedPlacements);
-
-        // All astriod can have a minimum distance from the borders by 1 unit
-        // Asteriods have a set Radius, determined by their prefabs Asteriod scripts placement radius
-
-        //Asteriods placement order
-
-        // Large 
-        /*
-         * They have a set Radius, determined by the prefabs Asteriod scripts placement radius
-         * There minimum distance from a Another Large Asteriod can be there Placement Radius + Tolerence 
-         */
-
-
-        // Medium
-        /*
-        * There minimum distance from a Large Asteriod can be there Placement Radius + LargeTolerence 
-        * There minimum distance from a Medium Asteriod can be there Placement Radius + MediumTolerence
-        */
-
-
-        // Small
-        /*
-         * The Small must have atleast 1 Medium or Large asteriod near it
-         * 
-         * There minimum distance from a Large Asteriod can be there Placement Radius + LargeMinTolerence 
-         * There maximum distance from a Large Asteriod can be there Placement Radius + LargeMaxTolerence 
-         * 
-         * There minimum distance from a Medium Asteriod can be there Placement Radius + MediumMinTolerence
-         * There maximum distance from a Medium Asteriod can be there Placement Radius + MediumMaxTolerence
-         * 
-         * There minimum distance from a Small Asteriod can be there Placement Radius + Tolerence 
-         */
-
-        // All of them will be added in a list, that is then sent out to all clients, so they can replicate the scene!
-
+        Sampling.SampleGenerating(numberOfSmallWanted, smallAstroidPrefabs.GetComponent<Asteriod>().placementRules, smallAstroidPrefabs, new Vector3(mapSize.x, 0, mapSize.y), new Vector3(-mapSize.x, 0, -mapSize.y), smallTransform, numberOfRejections: maxNumberOfFailedPlacements);
     }
     public void VisualGenerateLevel()
     {
         ClearLevel();
         totalOfConfirmedObjects = 0;
-        StartCoroutine(StartGenerate());
+        GenerateLevel();
+        //StartCoroutine(StartGenerate());
 
     }
-    Coroutine coroutine = null;
-    public IEnumerator StartGenerate()
-    {
+    //Coroutine coroutine = null;
+    //public IEnumerator StartGenerate()
+    //{
 
-        coroutine = StartCoroutine(VisualRepresentationOfSampling(numberOfLargeWanted, largeAstroidPrefabs, largeTransform, maxNumberOfFailedPlacements));
-        yield return new WaitUntil(() => coroutine == null);
+    //    coroutine = StartCoroutine(VisualRepresentationOfSampling(numberOfLargeWanted, largeAstroidPrefabs, largeTransform, maxNumberOfFailedPlacements));
+    //    yield return new WaitUntil(() => coroutine == null);
 
-        coroutine = StartCoroutine(VisualRepresentationOfSampling(numberOfMediumWanted, mediumAstroidPrefabs, mediumTransform, maxNumberOfFailedPlacements));
+    //    coroutine = StartCoroutine(VisualRepresentationOfSampling(numberOfMediumWanted, mediumAstroidPrefabs, mediumTransform, maxNumberOfFailedPlacements));
 
-        yield return new WaitUntil(() => coroutine == null);
+    //    yield return new WaitUntil(() => coroutine == null);
 
-        coroutine = StartCoroutine(VisualRepresentationOfSampling(numberOfSmallWanted, smallAstroidPrefabs, smallTransform, maxNumberOfFailedPlacements));
-        yield return new WaitUntil(() => coroutine == null);
-        Debug.Log("Level Generation Complete");
-    }
+    //    coroutine = StartCoroutine(VisualRepresentationOfSampling(numberOfSmallWanted, smallAstroidPrefabs, smallTransform, maxNumberOfFailedPlacements));
+    //    yield return new WaitUntil(() => coroutine == null);
+    //    Debug.Log("Level Generation Complete");
+    //}
 
-    public void SampleGeneration(int numberOfActualDesiredObjects, GameObject prefab, Transform parent, int numberOfRejections = 10)
-    {
-        int numberOfSamples = (int)(numberOfActualDesiredObjects * sampleMultiplier);
-        Debug.Log("Number Of Samples for " + prefab.name + " :" + numberOfSamples);
-        Asteriod preFabAsteriod = prefab.GetComponent<Asteriod>();
-        Vector3 position;
-        int numberOfDesiredObjects = numberOfActualDesiredObjects;
-        int countOfConfirmed = 0;
+    //public void SampleGeneration(int numberOfActualDesiredObjects, GameObject prefab, Transform parent, int numberOfRejections = 10)
+    //{
+    //    int numberOfSamples = (int)(numberOfActualDesiredObjects * sampleMultiplier);
+    //    Debug.Log("Number Of Samples for " + prefab.name + " :" + numberOfSamples);
+    //    Asteriod preFabAsteriod = prefab.GetComponent<Asteriod>();
+    //    Vector3 position;
+    //    int numberOfDesiredObjects = numberOfActualDesiredObjects;
+    //    int countOfConfirmed = 0;
 
-        for (int i = 0; i < numberOfSamples && countOfConfirmed < numberOfDesiredObjects; i++)
-        {
-            bool validPlacement = false;
-            bool rejected = false;
-            int countOfFailedPlacement = 0;
-            do
-            {
-                position = new Vector3(UnityEngine.Random.Range(-mapSize.x, mapSize.x), 0, UnityEngine.Random.Range(-mapSize.y, mapSize.y));
+    //    for (int i = 0; i < numberOfSamples && countOfConfirmed < numberOfDesiredObjects; i++)
+    //    {
+    //        bool validPlacement = false;
+    //        bool rejected = false;
+    //        int countOfFailedPlacement = 0;
+    //        do
+    //        {
+    //            position = new Vector3(UnityEngine.Random.Range(-mapSize.x, mapSize.x), 0, UnityEngine.Random.Range(-mapSize.y, mapSize.y));
 
-                if (preFabAsteriod.ValidatePlacement(position))
-                {
-                    validPlacement = true;
-                    continue;
-                }
+    //            if (preFabAsteriod.ValidatePlacement(position))
+    //            {
+    //                validPlacement = true;
+    //                continue;
+    //            }
 
-                if (countOfFailedPlacement >= numberOfRejections)
-                {
-                    validPlacement = true;
-                    rejected = true;
-                    continue;
-                }
-                countOfFailedPlacement++;
+    //            if (countOfFailedPlacement >= numberOfRejections)
+    //            {
+    //                validPlacement = true;
+    //                rejected = true;
+    //                continue;
+    //            }
+    //            countOfFailedPlacement++;
 
-            } while (!validPlacement);
+    //        } while (!validPlacement);
 
-            if (rejected)
-            {
-                numberOfDesiredObjects--;
-                continue;
-            }
+    //        if (rejected)
+    //        {
+    //            numberOfDesiredObjects--;
+    //            continue;
+    //        }
 
-            countOfConfirmed++;
-            totalOfConfirmedObjects++;
-            confirmedPlacements.Add(SpawnInPrefab(prefab, position, parent));
-        }
+    //        countOfConfirmed++;
+    //        totalOfConfirmedObjects++;
+    //        confirmedPlacements.Add(SpawnInPrefab(prefab, position, parent));
+    //    }
 
-    }
+    //}
 
     GameObject SpawnInPrefab(GameObject prefab, Vector3 position, Transform parent)
     {
@@ -188,123 +154,123 @@ public class LevelGenerator : MonoBehaviour
     }
     //This sould have the same code as SampleLevel
     #region SAMPLING : Showing What the code does Visualy in the Editor;
-    public IEnumerator VisualRepresentationOfSampling(int numberOfActualDesiredObjects, GameObject preFab, Transform hieararcyHolder, int numberOfRejections = 10)
-    {
-        displayPrenentation = true;
-        int numberOfSamples = (int)(numberOfActualDesiredObjects * sampleMultiplier);
-        Debug.Log("Number Of Samples for " + preFab.name + " :" + numberOfSamples);
-        Asteriod preFabAsteriod = preFab.GetComponent<Asteriod>();
-        presentationSphereSize = preFabAsteriod.radius;
-        Vector3 position;
-        int numberOfDesiredObjects = numberOfActualDesiredObjects;
-        int countOfConfirmed = 0;
-        for (int i = 0; i < numberOfSamples && countOfConfirmed < numberOfDesiredObjects; i++)
-        {
-            bool validPlacement = false;
-            bool rejected = false;
-            int countOfFailedPlacement = 0;
+    //public IEnumerator VisualRepresentationOfSampling(int numberOfActualDesiredObjects, GameObject preFab, Transform hieararcyHolder, int numberOfRejections = 10)
+    //{
+    //    displayPrenentation = true;
+    //    int numberOfSamples = (int)(numberOfActualDesiredObjects * sampleMultiplier);
+    //    Debug.Log("Number Of Samples for " + preFab.name + " :" + numberOfSamples);
+    //    Asteriod preFabAsteriod = preFab.GetComponent<Asteriod>();
+    //    presentationSphereSize = preFabAsteriod.radius;
+    //    Vector3 position;
+    //    int numberOfDesiredObjects = numberOfActualDesiredObjects;
+    //    int countOfConfirmed = 0;
+    //    for (int i = 0; i < numberOfSamples && countOfConfirmed < numberOfDesiredObjects; i++)
+    //    {
+    //        bool validPlacement = false;
+    //        bool rejected = false;
+    //        int countOfFailedPlacement = 0;
 
-            //Only for the Visual
-            presentationColor = Color.yellow;
+    //        //Only for the Visual
+    //        presentationColor = Color.yellow;
 
-            do
-            {
-                position = new Vector3(UnityEngine.Random.Range(-mapSize.x, mapSize.x), 0, UnityEngine.Random.Range(-mapSize.y, mapSize.y));
-                presentationPosition = position;
-                presentationOtherComparisonPosition = position;
-                #region Code From Asteriod.ValidatePlacement(Vector3 Position)
-                bool result = true;
-                //Code that is inside Asteriod.ValidatePlacement(Vector3 position);
-                if (!Physics.CheckSphere(position, preFabAsteriod.radius))
-                {
-                    if (preFab == smallAstroidPrefabs)
-                    {
-                        SmallAsteriod smallAsteriod = preFabAsteriod as SmallAsteriod;
-                        smallAsteriod.largeOrMediumNearIt = 0;
-                    }
-                    Collider[] listOfHits = Physics.OverlapSphere(position, preFabAsteriod.searchRadius);
-                    for (int k = 0; k < listOfHits.Length; k++)
-                    {
-                        presentationComparisonColor = Color.yellow;
-                        if (listOfHits[k].gameObject == gameObject)
-                        {
-                            continue;
-                        }
-                        if (listOfHits[k].tag != "Asteriod")
-                        {
-                            continue;
-                        }
-                        presentationOtherComparisonPosition = listOfHits[k].transform.position;
-                        yield return new WaitForSecondsRealtime(2f / numberOfSamples);
-                        if (!preFabAsteriod.ValidationOfPlacement(position, listOfHits[k].GetComponent<Asteriod>()))
-                        {
-                            result = false;
-                            presentationComparisonColor = Color.red;
-                            yield return new WaitForSecondsRealtime(2f / numberOfSamples);
-                            break;
-                        }
-                        presentationComparisonColor = Color.green;
-                        yield return new WaitForSecondsRealtime(2f / numberOfSamples);
-                    }
-                    if (preFab == smallAstroidPrefabs)
-                    {
-                        SmallAsteriod smallAsteriod = preFabAsteriod as SmallAsteriod;
-                        if (smallAsteriod.largeOrMediumNearIt < 1)
-                        {
-                            result = false;
-                        }
-                    }
+    //        do
+    //        {
+    //            position = new Vector3(UnityEngine.Random.Range(-mapSize.x, mapSize.x), 0, UnityEngine.Random.Range(-mapSize.y, mapSize.y));
+    //            presentationPosition = position;
+    //            presentationOtherComparisonPosition = position;
+    //            #region Code From Asteriod.ValidatePlacement(Vector3 Position)
+    //            bool result = true;
+    //            //Code that is inside Asteriod.ValidatePlacement(Vector3 position);
+    //            if (!Physics.CheckSphere(position, preFabAsteriod.radius))
+    //            {
+    //                if (preFab == smallAstroidPrefabs)
+    //                {
+    //                    SmallAsteriod smallAsteriod = preFabAsteriod as SmallAsteriod;
+    //                    smallAsteriod.largeOrMediumNearIt = 0;
+    //                }
+    //                Collider[] listOfHits = Physics.OverlapSphere(position, preFabAsteriod.searchRadius);
+    //                for (int k = 0; k < listOfHits.Length; k++)
+    //                {
+    //                    presentationComparisonColor = Color.yellow;
+    //                    if (listOfHits[k].gameObject == gameObject)
+    //                    {
+    //                        continue;
+    //                    }
+    //                    if (listOfHits[k].tag != "Asteriod")
+    //                    {
+    //                        continue;
+    //                    }
+    //                    presentationOtherComparisonPosition = listOfHits[k].transform.position;
+    //                    yield return new WaitForSecondsRealtime(2f / numberOfSamples);
+    //                    if (!preFabAsteriod.ValidationOfPlacement(position, listOfHits[k].GetComponent<Asteriod>()))
+    //                    {
+    //                        result = false;
+    //                        presentationComparisonColor = Color.red;
+    //                        yield return new WaitForSecondsRealtime(2f / numberOfSamples);
+    //                        break;
+    //                    }
+    //                    presentationComparisonColor = Color.green;
+    //                    yield return new WaitForSecondsRealtime(2f / numberOfSamples);
+    //                }
+    //                if (preFab == smallAstroidPrefabs)
+    //                {
+    //                    SmallAsteriod smallAsteriod = preFabAsteriod as SmallAsteriod;
+    //                    if (smallAsteriod.largeOrMediumNearIt < 1)
+    //                    {
+    //                        result = false;
+    //                    }
+    //                }
 
-                }
-                else
-                {
-                    result = false;
-                }
-                // Placement is valid, you can place the Asteriod there
-                #endregion
+    //            }
+    //            else
+    //            {
+    //                result = false;
+    //            }
+    //            // Placement is valid, you can place the Asteriod there
+    //            #endregion
 
-                //Here it tries to Validate it
-                if (result)
-                {
-                    validPlacement = true;
-                    continue;
-                }
+    //            //Here it tries to Validate it
+    //            if (result)
+    //            {
+    //                validPlacement = true;
+    //                continue;
+    //            }
 
-                if (countOfFailedPlacement >= numberOfRejections)
-                {
-                    validPlacement = true;
-                    rejected = true;
-                    continue;
-                }
-                countOfFailedPlacement++;
+    //            if (countOfFailedPlacement >= numberOfRejections)
+    //            {
+    //                validPlacement = true;
+    //                rejected = true;
+    //                continue;
+    //            }
+    //            countOfFailedPlacement++;
 
-                //Only for the Visual
-                yield return new WaitForSecondsRealtime(1f / numberOfSamples);
+    //            //Only for the Visual
+    //            yield return new WaitForSecondsRealtime(1f / numberOfSamples);
 
-            } while (!validPlacement);
+    //        } while (!validPlacement);
 
-            if (rejected)
-            {
-                numberOfDesiredObjects--;
+    //        if (rejected)
+    //        {
+    //            numberOfDesiredObjects--;
 
-                //Only for the Visual
-                presentationColor = Color.red;
-                yield return new WaitForSecondsRealtime(2f / numberOfSamples);
+    //            //Only for the Visual
+    //            presentationColor = Color.red;
+    //            yield return new WaitForSecondsRealtime(2f / numberOfSamples);
 
-                continue;
-            }
-            //Only for the Visual
-            presentationColor = Color.green;
-            yield return new WaitForSecondsRealtime(3f / numberOfSamples);
+    //            continue;
+    //        }
+    //        //Only for the Visual
+    //        presentationColor = Color.green;
+    //        yield return new WaitForSecondsRealtime(3f / numberOfSamples);
 
-            countOfConfirmed++;
-            totalOfConfirmedObjects++;
-            confirmedPlacements.Add(Instantiate(preFab, position, UnityEngine.Random.rotation, hieararcyHolder));
-        }
-        displayPrenentation = false;
-        coroutine = null;
-        yield break;
-    }
+    //        countOfConfirmed++;
+    //        totalOfConfirmedObjects++;
+    //        confirmedPlacements.Add(Instantiate(preFab, position, UnityEngine.Random.rotation, hieararcyHolder));
+    //    }
+    //    displayPrenentation = false;
+    //    coroutine = null;
+    //    yield break;
+    //}
     #endregion
 
     /// <summary>

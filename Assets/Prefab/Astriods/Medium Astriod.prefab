@@ -103,11 +103,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7760c151b04998c428b4106372c9a227, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  radius: 1.55
-  searchRadius: 5
+  placementRules: {fileID: 11400000, guid: f5c5efba33001674ca8534156199b8fe, type: 2}
   ShowSearhRadius: 0
-  largeAsteriodThreshold: 2
-  mediumAsteriodThreshold: 4
 --- !u!1001 &3278472352757827057
 PrefabInstance:
   m_ObjectHideFlags: 0
