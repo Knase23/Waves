@@ -58,7 +58,7 @@ public static class Sampling
             if (validPositionState)
             {
                 //Spawn in Object
-                GameObject.Instantiate(prefab, randomPosition, Quaternion.identity,parent);
+                GameObject.Instantiate(prefab, randomPosition, UnityEngine.Random.rotation,parent);
             }
         }
     }
