@@ -4,6 +4,14 @@ using System.Collections.Generic;
 using UnityEngine;
 public static class Sampling
 {
+
+    // Use Poisson-disc distribution method do spawn in a level.
+    /* The function takes in: int numberOfSamples, Gameobject objectToPlace (That have a Asteriod script on it) ,int NumberOfRejections = 10 
+         *  Randomize a postion, within the playing area
+         *  Check if its a valid position.
+         *      - The check sees there is no other confirmed samples within its area of placment Influence.
+         *  If valid, its position is set. And that sample is confirmed.
+         */
     public static  List<GameObject> SampleGenerating(int numberOfActualDesiredObjects,Sample sampleRules, GameObject prefab, Vector3 maxPosition, Vector3 minPosition, Transform parent = null, float sampleMultiplier = 1.5f, int numberOfRejections = 10)
     {
         // Get the gameobjects Sample
