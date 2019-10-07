@@ -7,10 +7,6 @@ using System;
 public class LevelGenerator : MonoBehaviour
 {
     public Transform mapTransform;
-    public Transform smallTransform;
-    public Transform mediumTransform;
-    public Transform largeTransform;
-
     public Vector2Int mapSize;
 
     [Header("Astriod prefabs")]
@@ -18,21 +14,20 @@ public class LevelGenerator : MonoBehaviour
     public GameObject mediumAstroidPrefabs;
     public GameObject smallAstroidPrefabs;
 
-    [Header("Tolerance")]
-    public int maxNumberOfFailedPlacements = 10;
+    [Header("Organization For Asteriods")]
+    public Transform smallTransform;
+    public Transform mediumTransform;
+    public Transform largeTransform;
+
+    [Header("Sampling Parameters")]
     public float sampleMultiplier = 1.5f;
+    public int maxNumberOfFailedPlacements = 10;
     public int numberOfLargeWanted = 50;
     public int numberOfMediumWanted = 50;
     public int numberOfSmallWanted = 50;
+
     [Header("Debugging")]
     public int totalOfConfirmedObjects = 0;
-    public bool ShowPresentationSphere = true;
-    public float presentationSphereSize = 5;
-    private Vector3 presentationPosition = Vector3.zero;
-    private Vector3 presentationOtherComparisonPosition = Vector3.zero;
-    private Color presentationColor = Color.white;
-    private Color presentationComparisonColor = Color.white;
-    private bool displayPrenentation = false;
 
     private List<GameObject> confirmedPlacements = new List<GameObject>();
     /// <summary>
