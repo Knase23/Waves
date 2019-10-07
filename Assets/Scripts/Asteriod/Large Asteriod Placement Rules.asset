@@ -9,13 +9,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 0}
+  m_Script: {fileID: 11500000, guid: 7f0ae4a19c79c234196c220afb350afd, type: 3}
   m_Name: Large Asteriod Placement Rules
   m_EditorClassIdentifier: Assembly-CSharp::LargeAsteriodSample
-  radius: 6
-  searchRadius: 30
+  radius: 1
+  searchRadius: 10
   mask:
     serializedVersion: 2
     m_Bits: 512
   queryTriggerInteraction: 0
-  minimumDistanceFromOtherLargeAsteriod: 4
+  minimumDistanceFromOtherLargeAsteriod: 1
