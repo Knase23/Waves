@@ -9,11 +9,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 0}
+  m_Script: {fileID: 11500000, guid: fbc25b9c1f68894428ed4eefa08d6bee, type: 3}
   m_Name: Medium Asteriod Placement Rules
   m_EditorClassIdentifier: Assembly-CSharp::MediumAsteriodSample
-  radius: 1.55
-  searchRadius: 5
+  radius: 1
+  searchRadius: 10
   mask:
     serializedVersion: 2
     m_Bits: 512

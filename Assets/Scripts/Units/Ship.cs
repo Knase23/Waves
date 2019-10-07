@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -121,6 +122,13 @@ public class Ship : MonoBehaviour, IPlayerShipControl, IDamagable
         rb.velocity += increment;
         transform.Rotate(horizontal * Vector3.up * rotationSpeed);
         transform.rotation = Quaternion.Euler(0, transform.rotation.eulerAngles.y, 0);
+
+        if (DiscordLobbyService.INSTANCE.IsTheHost())
+        {
+            MovementData movementData = new MovementData(transform.position.x, transform.position.y, 0);
+            DiscordNetworkLayerService.INSTANCE.SendMessegeToAllOthers(NetworkChannel.OBJECT_POSITION, movementData.ToBytes());
+        }
+
     }
 
     public void Move(Vector3 position)
@@ -145,4 +153,62 @@ public class Ship : MonoBehaviour, IPlayerShipControl, IDamagable
         gameObject.SetActive(false);
     }
     #endregion
+}
+
+public struct MovementData
+{
+    public float x, y;
+
+    public long id;
+    public MovementData(float x, float y, long id)
+    {
+        this.x = x;
+        this.y = y;
+        this.id = id;
+
+    }
+    public MovementData(byte[] data)
+    {
+        x = BitConverter.ToSingle(data, 0);
+        y = BitConverter.ToSingle(data, 4);
+        id = BitConverter.ToInt64(data, 8);
+    }
+    public byte[] ToBytes()
+    {
+        List<byte> vs = new List<byte>();
+
+        vs.AddRange(BitConverter.GetBytes(x));
+        vs.AddRange(BitConverter.GetBytes(y));
+        vs.AddRange(BitConverter.GetBytes(id));
+        return vs.ToArray();
+    }
+
+    public override bool Equals(object obj)
+    {
+        if (!(obj is MovementData))
+        {
+            return false;
+        }
+
+        var data = (MovementData)obj;
+        return data == this;
+    }
+
+    public override int GetHashCode()
+    {
+        var hashCode = 1315532907;
+        hashCode = hashCode * -1521134295 + x.GetHashCode();
+        hashCode = hashCode * -1521134295 + y.GetHashCode();
+        hashCode = hashCode * -1521134295 + id.GetHashCode();
+        return hashCode;
+    }
+
+    public static bool operator ==(MovementData left, MovementData right)
+    {
+        return left.id == right.id && left.x == right.x && left.y == right.y;
+    }
+    public static bool operator !=(MovementData left, MovementData right)
+    {
+        return left.id != right.id || left.x != right.x || left.y != right.y;
+    }
 }

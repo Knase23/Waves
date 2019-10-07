@@ -7,6 +7,7 @@ using System;
 public class LevelGenerator : MonoBehaviour
 {
     public Transform mapTransform;
+    public Transform spawnPointTransform;
     public Vector2Int mapSize;
 
     [Header("Astriod prefabs")]
@@ -25,11 +26,13 @@ public class LevelGenerator : MonoBehaviour
     public int numberOfLargeWanted = 50;
     public int numberOfMediumWanted = 50;
     public int numberOfSmallWanted = 50;
-
+    public int numberOfSpawnPoints = 10;
     [Header("Debugging")]
     public int totalOfConfirmedObjects = 0;
-
+    internal Vector3 maxPosition;
+    internal Vector3 minPosition;
     private List<GameObject> confirmedPlacements = new List<GameObject>();
+    public List<GameObject> spawnpoints = new List<GameObject>();
     /// <summary>
     /// Generates a map of astiods with the given prefabs
     /// </summary>
@@ -49,8 +52,8 @@ public class LevelGenerator : MonoBehaviour
         List<GameObject> allGeneratedObjects = new List<GameObject>();
 
         //Setup the area for were we can spawn in the Asteriods
-        Vector3 maxPosition = new Vector3(mapSize.x, 0, mapSize.y);
-        Vector3 minPosition = new Vector3(-mapSize.x, 0, -mapSize.y);
+        maxPosition = new Vector3(mapSize.x, 0, mapSize.y);
+        minPosition = new Vector3(-mapSize.x, 0, -mapSize.y);
         
         
         //Spawn in Large Asteriods with there placement rules. within setup area.
@@ -64,9 +67,10 @@ public class LevelGenerator : MonoBehaviour
         totalOfConfirmedObjects = allGeneratedObjects.Count;
 
         // Done with Obsticles in level
-        
+
         // Generate Locations for spawn positions for all players
-        
+    
+        spawnpoints.AddRange(Sampling.SampleGenerating(numberOfSpawnPoints,new SpawnPointSample(),new GameObject("Spawn Point"),maxPosition,minPosition, spawnPointTransform));
         // Generate Pick Up spawn positions
 
         // Done with all level Setups
