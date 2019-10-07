@@ -40,25 +40,47 @@ public class LevelGenerator : MonoBehaviour
     /// </summary>
     public void GenerateLevel()
     {
-        // Use Poisson-disc distribution method do spawn in a level.
+        // Make sure we are the Host, if not wait until we recieve a message
+
+
+        // Clean up Scene, so there is a no asteriods in the scene
         ClearLevel();
-        /* The function takes in: int numberOfSamples, Gameobject objectToPlace (That have a Asteriod script on it) ,int NumberOfRejections = 10 
-         *  Randomize a postion, within the playing area
-         *  Check if its a valid position.
-         *      - The check sees there is no other confirmed samples within its area of placment Influence.
-         *  If valid, its position is set. And that sample is confirmed.
-         */
+
+
+        // Start Generating the Level using Sampling
         totalOfConfirmedObjects = 0;
+
+        //List of all created Objects, used later for Networking
         List<GameObject> allGeneratedObjects = new List<GameObject>();
+
+        //Setup the area for were we can spawn in the Asteriods
         Vector3 maxPosition = new Vector3(mapSize.x, 0, mapSize.y);
         Vector3 minPosition = new Vector3(-mapSize.x, 0, -mapSize.y);
-        //Large
+        
+        
+        //Spawn in Large Asteriods with there placement rules. within setup area.
         allGeneratedObjects.AddRange(Sampling.SampleGenerating(numberOfLargeWanted, largeAstroidPrefabs.GetComponent<Asteriod>().placementRules, largeAstroidPrefabs, maxPosition, minPosition, largeTransform, numberOfRejections: maxNumberOfFailedPlacements));
-        //Medium
+        
+        //Spawn in Medium Asteriods with there placement rules. within setup area.
         allGeneratedObjects.AddRange(Sampling.SampleGenerating(numberOfMediumWanted, mediumAstroidPrefabs.GetComponent<Asteriod>().placementRules, mediumAstroidPrefabs, maxPosition, minPosition, mediumTransform, numberOfRejections: maxNumberOfFailedPlacements));
-        //Small
+        
+        //Spawn in Small Asteriods with there placement rules. within setup area.
         allGeneratedObjects.AddRange(Sampling.SampleGenerating(numberOfSmallWanted, smallAstroidPrefabs.GetComponent<Asteriod>().placementRules, smallAstroidPrefabs, maxPosition, minPosition, smallTransform, numberOfRejections: maxNumberOfFailedPlacements));
         totalOfConfirmedObjects = allGeneratedObjects.Count;
+
+        // Done with Obsticles in level
+        
+        // Generate Locations for spawn positions for all players
+        
+        // Generate Pick Up spawn positions
+
+        // Done with all level Setups
+        
+        // Send a Network Package to all Clients, this must be TCP, We need to have identical maps.
+        /*
+         * Network Code Stuff
+         * 
+         */
     }
 
     /// <summary>
@@ -71,6 +93,13 @@ public class LevelGenerator : MonoBehaviour
         {
             DestroyImmediate(child);
         }
+    }
+    private List<GameObject> GetAstriodsFromTransform(Transform transform)
+    {
+        List<GameObject> list = new List<GameObject>();
+        // This is a Recursive Function, it will go though all gameobjects under the given transform and added them to the list
+        AddGameObjectWithTagFormTransform("Asteriod", transform, ref list);
+        return list;
     }
     /// <summary>
     /// Recursive Function, go though all transforms children until a the tag matches and then adds it to the list
@@ -92,11 +121,5 @@ public class LevelGenerator : MonoBehaviour
         }
     }
 
-    private List<GameObject> GetAstriodsFromTransform(Transform transform)
-    {
-        List<GameObject> list = new List<GameObject>();
-        // This is a Recursive Function, it will go though all gameobjects under the given transform and added them to the list
-        AddGameObjectWithTagFormTransform("Asteriod", transform, ref list);
-        return list;
-    }
+    
 }
