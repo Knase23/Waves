@@ -13,26 +13,6 @@ public class LevelGenerator : MonoBehaviour
 
     public Vector2Int mapSize;
 
-
-
-    //[Header("Perlin noise")]
-    //public float noiseZoom;
-    //public bool randomOffset = false;
-    //public Vector2 perlinOffset;
-
-    //public float levelScale;
-
-    //[Serializable]
-    //public struct Range2Float
-    //{
-    //    public float max;
-    //    public float min;
-    //}
-
-    //public Range2Float largeRange;
-    //public Range2Float mediumRange;
-    //public Range2Float smallRange;
-
     [Header("Astriod prefabs")]
     public GameObject largeAstroidPrefabs;
     public GameObject mediumAstroidPrefabs;
@@ -69,26 +49,15 @@ public class LevelGenerator : MonoBehaviour
          *  If valid, its position is set. And that sample is confirmed.
          */
         totalOfConfirmedObjects = 0;
+        List<GameObject> allGeneratedObjects = new List<GameObject>();
+        Vector3 maxPosition = new Vector3(mapSize.x, 0, mapSize.y);
+        Vector3 minPosition = new Vector3(-mapSize.x, 0, -mapSize.y);
         //Large
-        Sampling.SampleGenerating(numberOfLargeWanted, largeAstroidPrefabs.GetComponent<Asteriod>().placementRules, largeAstroidPrefabs, new Vector3(mapSize.x, 0, mapSize.y), new Vector3(-mapSize.x, 0, -mapSize.y), largeTransform, numberOfRejections: maxNumberOfFailedPlacements);
+        allGeneratedObjects.AddRange(Sampling.SampleGenerating(numberOfLargeWanted, largeAstroidPrefabs.GetComponent<Asteriod>().placementRules, largeAstroidPrefabs, maxPosition, minPosition, largeTransform, numberOfRejections: maxNumberOfFailedPlacements));
         //Medium
-        Sampling.SampleGenerating(numberOfMediumWanted, mediumAstroidPrefabs.GetComponent<Asteriod>().placementRules, mediumAstroidPrefabs, new Vector3(mapSize.x, 0, mapSize.y), new Vector3(-mapSize.x, 0, -mapSize.y), mediumTransform, numberOfRejections: maxNumberOfFailedPlacements);
+        allGeneratedObjects.AddRange(Sampling.SampleGenerating(numberOfMediumWanted, mediumAstroidPrefabs.GetComponent<Asteriod>().placementRules, mediumAstroidPrefabs, maxPosition, minPosition, mediumTransform, numberOfRejections: maxNumberOfFailedPlacements));
         //Small
-        Sampling.SampleGenerating(numberOfSmallWanted, smallAstroidPrefabs.GetComponent<Asteriod>().placementRules, smallAstroidPrefabs, new Vector3(mapSize.x, 0, mapSize.y), new Vector3(-mapSize.x, 0, -mapSize.y), smallTransform, numberOfRejections: maxNumberOfFailedPlacements);
-    }
-    public void VisualGenerateLevel()
-    {
-        ClearLevel();
-        totalOfConfirmedObjects = 0;
-        GenerateLevel();
-        //StartCoroutine(StartGenerate());
-
-    }
-
-    GameObject SpawnInPrefab(GameObject prefab, Vector3 position, Transform parent)
-    {
-        GameObject gameObject = Instantiate(prefab, position, UnityEngine.Random.rotation, parent);
-        return gameObject;
+        allGeneratedObjects.AddRange(Sampling.SampleGenerating(numberOfSmallWanted, smallAstroidPrefabs.GetComponent<Asteriod>().placementRules, smallAstroidPrefabs, maxPosition, minPosition, smallTransform, numberOfRejections: maxNumberOfFailedPlacements));
     }
 
     /// <summary>
@@ -131,18 +100,4 @@ public class LevelGenerator : MonoBehaviour
         AddGameObjectWithTagFormTransform("Asteriod", transform, ref list);
         return list;
     }
-    private void OnDrawGizmos()
-    {
-        if (ShowPresentationSphere && displayPrenentation)
-        {
-
-            Gizmos.color = presentationColor;
-            Gizmos.DrawSphere(presentationPosition, presentationSphereSize);
-            Gizmos.color = presentationComparisonColor;
-            Gizmos.DrawLine(presentationPosition, presentationOtherComparisonPosition);
-
-        }
-    }
-
-
 }

@@ -1,10 +1,13 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 public static class Sampling
 {
-    public static void SampleGenerating(int numberOfActualDesiredObjects,Sample sampleRules, GameObject prefab, Vector3 maxPosition, Vector3 minPosition, Transform parent = null, float sampleMultiplier = 1.5f, int numberOfRejections = 10)
+    public static  List<GameObject> SampleGenerating(int numberOfActualDesiredObjects,Sample sampleRules, GameObject prefab, Vector3 maxPosition, Vector3 minPosition, Transform parent = null, float sampleMultiplier = 1.5f, int numberOfRejections = 10)
     {
         // Get the gameobjects Sample
+        List<GameObject> result = new List<GameObject>();
         int numberOfSamples = (int)(numberOfActualDesiredObjects * sampleMultiplier);
         Vector3 randomPosition;
         int numberOfDesiredObjects = numberOfActualDesiredObjects;
@@ -49,8 +52,9 @@ public static class Sampling
             if (validPositionState)
             {
                 //Spawn in Object
-                GameObject.Instantiate(prefab, randomPosition, UnityEngine.Random.rotation,parent);
+                result.Add(GameObject.Instantiate(prefab, randomPosition, UnityEngine.Random.rotation,parent));
             }
         }
+        return result;
     }
 }
