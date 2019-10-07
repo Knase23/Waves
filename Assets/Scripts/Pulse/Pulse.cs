@@ -12,10 +12,11 @@ public class Pulse : MonoBehaviour
     private float maxDistance = 10;
     private float previousDistanceFromCenter = 0;
 
-    public static void CreatePulse(float speed, float strength, float maxDistance, Transform maker, Color makerColor)
+    public static void CreatePulse(float speed, float strength, float maxDistance, Transform maker, Color makerColor, Transform parent = null)
     {
         GameObject gameObject = new GameObject("Pulse");
         gameObject.transform.position = maker.position;
+        gameObject.transform.parent = parent;
         Pulse pulse = gameObject.AddComponent<Pulse>();
         pulse.Init(speed, strength, maxDistance, maker, makerColor);
     }
