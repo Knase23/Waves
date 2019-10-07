@@ -47,25 +47,26 @@ public class DiscordNetworkLayerService : MonoBehaviour
         //Debug.Log("Got Messege from: " + peerId + " on Channel: " + channel);
         switch (channel)
         {
-            case NetworkChannel.INPUT_DATA:
-               
+            case NetworkChannel.INPUT_DATA:  
+                //If the data is from a client
+                // Do stuff with it.
 
                 break;
             case NetworkChannel.LOADSCENE:
-
+                // if the data is from a host
+                // LoadScene and wait for map to be generated.
                 break;
-            case NetworkChannel.CHARACTER_POSITION:
-
+            case NetworkChannel.OBJECT_POSITION:
+                //If the data is from the host
+                // update the position of that object
                 break;
             case NetworkChannel.CONTROLLER_SYNC:
-                //PlayerHandler.PlayerHandlerData handlerData = new PlayerHandler.PlayerHandlerData(data);
-                //PlayerHandler.INSTANCE?.SetAllPlayers(handlerData.orderSelected, handlerData.orderOfId);
+                //If the data is from the host
+                // Make sure it matches
                 break;
             case NetworkChannel.SCORE_SYNC:
-
-                break;
-            case NetworkChannel.PORTRAITS_SYNC:
-
+                //If the data is from the host
+                // Make the score display the right numbers for each player.
                 break;
             default:
                 Debug.Log(peerId + " : Sent messege was not reognized");
@@ -83,6 +84,7 @@ public class DiscordNetworkLayerService : MonoBehaviour
         myRoute = routeData;
         DiscordLobbyService.INSTANCE.SetMyMetaData("route", routeData);
     }
+
     /// <summary>
     /// Sets the Networking MetaData for this client.
     /// </summary>
@@ -91,6 +93,7 @@ public class DiscordNetworkLayerService : MonoBehaviour
         DiscordLobbyService.INSTANCE.SetMyMetaData("peer_id", myPeerId.ToString());
         DiscordLobbyService.INSTANCE.SetMyMetaData("route", myRoute);
     }
+
     /// <summary>
     /// Sends a Network to everyone that is connected to me
     /// </summary>
@@ -107,6 +110,7 @@ public class DiscordNetworkLayerService : MonoBehaviour
         }
         return anyMessageSent;
     }
+
     /// <summary>
     /// Sends a Network package to the owner of the lobby
     /// </summary>
@@ -123,6 +127,7 @@ public class DiscordNetworkLayerService : MonoBehaviour
         }
         return false;
     }
+
     /// <summary>
     /// Makes a connection to the provided member in specified lobby
     /// </summary>
@@ -153,8 +158,7 @@ public class DiscordNetworkLayerService : MonoBehaviour
         manager.OpenChannel(peer_id, (byte)NetworkChannel.LOADSCENE, true);
         manager.OpenChannel(peer_id, (byte)NetworkChannel.CONTROLLER_SYNC, true);
         manager.OpenChannel(peer_id, (byte)NetworkChannel.SCORE_SYNC, true);
-        manager.OpenChannel(peer_id, (byte)NetworkChannel.PORTRAITS_SYNC, true);
-        manager.OpenChannel(peer_id, (byte)NetworkChannel.CHARACTER_POSITION, false);
+        manager.OpenChannel(peer_id, (byte)NetworkChannel.OBJECT_POSITION, false);
 
         if (!othersUserPeerIds.Contains(peer_id))
         {
@@ -164,6 +168,7 @@ public class DiscordNetworkLayerService : MonoBehaviour
         //Debug.Log("Sucess on Connection");
 
     }
+
     /// <summary>
     /// Updates so the route to the connection is correct
     /// </summary>
@@ -193,6 +198,7 @@ public class DiscordNetworkLayerService : MonoBehaviour
         }
         
     }
+    
     /// <summary>
     /// Disconnects a connection with a member
     /// </summary>
@@ -213,11 +219,28 @@ public class DiscordNetworkLayerService : MonoBehaviour
 /// </summary>
 public enum NetworkChannel
 {
+    /// <summary>
+    /// Handeling the input from client to host
+    /// </summary>
     INPUT_DATA = 1,
+    
+    /// <summary>
+    /// Load a scene and sends the correct map data
+    /// </summary>
     LOADSCENE,
-    CHARACTER_POSITION,
+    
+    /// <summary>
+    /// The position for a given character/ship
+    /// </summary>
+    OBJECT_POSITION,
+    
+    /// <summary>
+    /// Syncing so the player is controlling the correct ship it is controlling  
+    /// </summary>
     CONTROLLER_SYNC,
+    /// <summary>
+    /// Syncing so the score is displayed right
+    /// </summary>
     SCORE_SYNC,
-    PORTRAITS_SYNC
 
 }
