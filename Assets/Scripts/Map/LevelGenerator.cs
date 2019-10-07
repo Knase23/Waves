@@ -58,6 +58,7 @@ public class LevelGenerator : MonoBehaviour
         allGeneratedObjects.AddRange(Sampling.SampleGenerating(numberOfMediumWanted, mediumAstroidPrefabs.GetComponent<Asteriod>().placementRules, mediumAstroidPrefabs, maxPosition, minPosition, mediumTransform, numberOfRejections: maxNumberOfFailedPlacements));
         //Small
         allGeneratedObjects.AddRange(Sampling.SampleGenerating(numberOfSmallWanted, smallAstroidPrefabs.GetComponent<Asteriod>().placementRules, smallAstroidPrefabs, maxPosition, minPosition, smallTransform, numberOfRejections: maxNumberOfFailedPlacements));
+        totalOfConfirmedObjects = allGeneratedObjects.Count;
     }
 
     /// <summary>
@@ -71,8 +72,6 @@ public class LevelGenerator : MonoBehaviour
             DestroyImmediate(child);
         }
     }
-
-
     /// <summary>
     /// Recursive Function, go though all transforms children until a the tag matches and then adds it to the list
     /// </summary>

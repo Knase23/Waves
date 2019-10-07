@@ -12,21 +12,9 @@ public class LevelGeneratorEditor : Editor
         base.OnInspectorGUI();
         if (GUILayout.Button("Spawn Level"))
         {
-            if (EditorApplication.isPlaying)
-            {
-                if (Generation.ShowPresentationSphere)
-                {
-                    Generation.VisualGenerateLevel();
-                }
-                else
-                {
-                    Generation.GenerateLevel();
-                }
-            }
-            else
-            {
-                Generation.GenerateLevel();
-            }
+
+            Generation.GenerateLevel();
+
         }
         if (GUILayout.Button("Clear Level"))
         {
