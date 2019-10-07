@@ -52,6 +52,7 @@ public static class Sampling
             if (validPositionState)
             {
                 //Spawn in Object
+                countOfConfirmed++;
                 result.Add(GameObject.Instantiate(prefab, randomPosition, UnityEngine.Random.rotation,parent));
             }
         }
