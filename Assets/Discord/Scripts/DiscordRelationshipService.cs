@@ -7,7 +7,6 @@ public class DiscordRelationshipService : MonoBehaviour
     public static DiscordRelationshipService INSTANCE;
     bool onlyOnline = false;
     RelationshipManager relationshipManager;
-
     private void Awake()
     {
         if (INSTANCE)

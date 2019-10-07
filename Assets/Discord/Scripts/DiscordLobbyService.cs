@@ -14,7 +14,8 @@ public class DiscordLobbyService : MonoBehaviour
     public UserManager userManager;
     public long currentLobbyId;
     public string currentSecret;
-    public long currentOwnerId;
+    public long currentLobbyOwnerId;
+
     Coroutine coroutine;
 
     private void Awake()
@@ -33,9 +34,6 @@ public class DiscordLobbyService : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        Debug.Log(DiscordManager.INSTANCE);
-        Debug.Log(DiscordManager.INSTANCE.GetDiscord());
-
         lobbyManager = DiscordManager.INSTANCE.GetDiscord().GetLobbyManager();
         userManager = DiscordManager.INSTANCE.GetDiscord().GetUserManager();
         lobbyManager.OnLobbyUpdate += OnLobbyUpdate;
@@ -127,7 +125,7 @@ public class DiscordLobbyService : MonoBehaviour
         if(currentLobbyId == 0)
             return;
 
-        if (currentOwnerId != GetCurrentUserId())
+        if (currentLobbyOwnerId != GetCurrentUserId())
             return;
         
         lobbyManager.DeleteLobby(currentLobbyId, (result)=>{
@@ -202,7 +200,7 @@ public class DiscordLobbyService : MonoBehaviour
     // Statements 
     public bool IsTheHost()
     {
-        return currentOwnerId == 0 || userManager.GetCurrentUser().Id == currentOwnerId;
+        return currentLobbyOwnerId == 0 || userManager.GetCurrentUser().Id == currentLobbyOwnerId;
     }
     public bool Offline()
     {
@@ -222,7 +220,7 @@ public class DiscordLobbyService : MonoBehaviour
     {
         currentLobbyId = lobbyId;
         currentSecret = secret;
-        currentOwnerId = ownerId;
+        currentLobbyOwnerId = ownerId;
     }
 
 

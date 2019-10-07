@@ -47,9 +47,17 @@ public class DiscordNetworkLayerService : MonoBehaviour
         //Debug.Log("Got Messege from: " + peerId + " on Channel: " + channel);
         switch (channel)
         {
-            case NetworkChannel.INPUT_DATA:  
+            case NetworkChannel.INPUT_DATA:
                 //If the data is from a client
                 // Do stuff with it.
+                InputData iData = new InputData(data);
+
+                //Might find another solution like a dictionary for this so we not go though all objects
+                InputHandler[] array = FindObjectsOfType<InputHandler>();
+                foreach (var item in array)
+                {
+                    item.ReciveInputData(iData);
+                }
 
                 break;
             case NetworkChannel.LOADSCENE:
@@ -120,7 +128,7 @@ public class DiscordNetworkLayerService : MonoBehaviour
     public bool SendMessegeToOwnerOfLobby(NetworkChannel networkChannel, byte[] data)
     {
         ulong peerId;
-        if (memberIdToPeerId.TryGetValue(DiscordLobbyService.INSTANCE.currentOwnerId, out peerId))
+        if (memberIdToPeerId.TryGetValue(DiscordLobbyService.INSTANCE.currentLobbyOwnerId, out peerId))
         {
             manager.SendMessage(peerId, (byte)networkChannel, data);
             return true;
