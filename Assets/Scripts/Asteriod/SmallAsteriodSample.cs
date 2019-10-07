@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 [CreateAssetMenu(fileName = "Small Asteriod Placement Rules", menuName = "Placement Rules/Small Asteriod", order = 1)]
-public class SmallAsteriodSample : Sample
+public class SmallAsteriodSample : AsteriodSample
 {
     // Small
     /*
@@ -31,7 +31,7 @@ public class SmallAsteriodSample : Sample
     public override bool Validation(Vector3 position, Collider collider)
     {
         Asteriod other = collider.GetComponent<Asteriod>();
-        if (SpehereIntersecting(position, other, 1))
+        if (SpehereIntersecting(position, other, 0.8f))
         {
             return false;
         }

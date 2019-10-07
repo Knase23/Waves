@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "Medium Asteriod Placement Rules", menuName = "Placement Rules/Medium Asteriod", order = 2)]
-public class MediumAsteriodSample : Sample
+public class MediumAsteriodSample : AsteriodSample
 {
     // Medium
     /*
