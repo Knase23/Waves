@@ -237,7 +237,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   movmentSpeed: 10
-  rotationSpeed: 2
+  rotationSpeed: 60
   shipColor: {r: 0.08675194, g: 1, b: 0, a: 1}
   hp:
     maxHealth: 100
@@ -590,16 +590,6 @@ PrefabInstance:
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 2100000, guid: f4515b3c7e536f347a12e8ed4566741c, type: 2}
-    - target: {fileID: 65767838192354502, guid: f805c7b2f982faf43833878e4f22ae2a,
-        type: 3}
-      propertyPath: m_Enabled
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 65722035265767440, guid: f805c7b2f982faf43833878e4f22ae2a,
-        type: 3}
-      propertyPath: m_Enabled
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 65238288305302662, guid: f805c7b2f982faf43833878e4f22ae2a,
         type: 3}
       propertyPath: m_Enabled
@@ -611,6 +601,16 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 65340164749215534, guid: f805c7b2f982faf43833878e4f22ae2a,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 65722035265767440, guid: f805c7b2f982faf43833878e4f22ae2a,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 65767838192354502, guid: f805c7b2f982faf43833878e4f22ae2a,
         type: 3}
       propertyPath: m_Enabled
       value: 0

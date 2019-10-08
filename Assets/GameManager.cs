@@ -5,6 +5,11 @@ using UnityEngine;
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
+    public delegate void JoinedLobby();
+    public delegate void DisconnectedLobby();
+    public static event JoinedLobby OnJoinedLobby;
+    public static event DisconnectedLobby OnDisconnectLobby;
+
 
     private void Awake()
     {
@@ -28,6 +33,18 @@ public class GameManager : MonoBehaviour
         spawnLocationHandler = FindObjectOfType<SpawnLocationHandler>();
     }
 
+    public static void CheckOnline()
+    {
+        if (DiscordLobbyService.IsOnline)
+        {
+            OnJoinedLobby();
+        }
+        else
+        {
+            OnDisconnectLobby();
+        }
+
+    }
     // Update is called once per frame
     void Update()
     {
@@ -36,11 +53,7 @@ public class GameManager : MonoBehaviour
             lobbyService.CreateLobby();
             UserData userData = FindObjectOfType<UserData>();
 
-            userData.id = lobbyService.GetCurrentUserId();
-        }
-        if (Input.GetKeyUp(KeyCode.Return))
-        { 
-            spawnLocationHandler.SpawnInShipsForAllMembers();
+            userData.id = DiscordManager.CurrentUser.Id;
         }
     }
 }

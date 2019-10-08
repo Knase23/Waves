@@ -35,23 +35,23 @@ public class InputHandler : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (!DiscordLobbyService.INSTANCE.IsTheHost())
+        if (!DiscordLobbyService.INSTANCE.IsTheHost() && userID == DiscordManager.CurrentUser.Id)
         {
-            InputData data = new InputData(Input.GetAxisRaw(HorizontalAxis), Input.GetAxisRaw(VerticalAxis),Input.GetButton(ActionOneButton) ,userID);
-            if (latestInputUpdate != data)
-            {
-                latestInputUpdate = data;
-                DiscordNetworkLayerService.INSTANCE.SendMessegeToOwnerOfLobby(NetworkChannel.INPUT_DATA, latestInputUpdate.ToBytes());
-            }
+            InputData data = new InputData(Input.GetAxisRaw(HorizontalAxis), Input.GetAxisRaw(VerticalAxis), Input.GetButton(ActionOneButton), userID);
+            DiscordNetworkLayerService.INSTANCE.SendMessegeToOwnerOfLobby(NetworkChannel.INPUT_DATA, data.ToBytes());
+            return;
+        }
+        if (userID != DiscordManager.CurrentUser.Id)
+        {
             return;
         }
 
         if (Input.GetButtonDown(ActionOneButton))
         {
-            shipControl.ActionOne();
+            shipControl.ActionOne(userID);
         }
 
-        shipControl.Move(Input.GetAxis(HorizontalAxis), Input.GetAxis(VerticalAxis));
+        shipControl.Move(Input.GetAxis(HorizontalAxis), Input.GetAxis(VerticalAxis), userID);
     }
     public void SetOwnerOfThisInputHandler(long userID)
     {
@@ -59,18 +59,17 @@ public class InputHandler : MonoBehaviour
     }
     public void ReciveInputData(InputData data)
     {
-        if(data.id != userID)
+        if (data.id != userID)
         {
             return;
         }
 
         if (data.action1)
         {
-            shipControl.ActionOne();
+            shipControl.ActionOne(userID);
         }
-        shipControl.Move(data.x, data.y);
+        shipControl.Move(data.x, data.y, userID);
     }
-
 }
 public struct InputData
 {
@@ -78,7 +77,7 @@ public struct InputData
     public bool action1;
 
     public long id;
-    public InputData(float x, float y,bool action1,long id)
+    public InputData(float x, float y, bool action1, long id)
     {
         this.x = x;
         this.y = y;
@@ -90,8 +89,8 @@ public struct InputData
     {
         x = BitConverter.ToSingle(data, 0);
         y = BitConverter.ToSingle(data, 4);
-        action1 = BitConverter.ToBoolean(data, 8);
-        id = BitConverter.ToInt64(data, 16);
+        id = BitConverter.ToInt64(data, 8);
+        action1 = BitConverter.ToBoolean(data, 12);
     }
     public byte[] ToBytes()
     {
@@ -99,8 +98,8 @@ public struct InputData
 
         vs.AddRange(BitConverter.GetBytes(x));
         vs.AddRange(BitConverter.GetBytes(y));
-        vs.AddRange(BitConverter.GetBytes(action1));
         vs.AddRange(BitConverter.GetBytes(id));
+        vs.AddRange(BitConverter.GetBytes(action1));
         return vs.ToArray();
     }
 
@@ -125,7 +124,7 @@ public struct InputData
         return hashCode;
     }
 
-    public static bool operator ==(InputData left,InputData right)
+    public static bool operator ==(InputData left, InputData right)
     {
         return left.id == right.id && left.x == right.x && left.y == right.y && left.action1 == right.action1;
     }

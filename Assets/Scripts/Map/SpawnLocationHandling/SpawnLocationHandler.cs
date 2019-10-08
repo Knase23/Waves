@@ -13,6 +13,8 @@ public class SpawnLocationHandler : MonoBehaviour
     DiscordNetworkLayerService discordNetworkLayerService;
     LevelGenerator level;
 
+    public bool Debugging = false;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -21,42 +23,49 @@ public class SpawnLocationHandler : MonoBehaviour
         lobbyService = DiscordLobbyService.INSTANCE;
         lobbyService.lobbyManager.OnMemberConnect += LobbyManager_OnMemberConnect;
         lobbyService.lobbyManager.OnMemberDisconnect += LobbyManager_OnMemberDisconnect;
+        GameManager.OnJoinedLobby += SpawnInShipsForAllMembers;
     }
 
     private void LobbyManager_OnMemberDisconnect(long lobbyId, long userId)
     {
-        Debug.Log("Lobby ID: " + lobbyId + "-  User ID: " + userId + " - Member Disconnected");
+        if (Debugging)
+            Debug.Log("Lobby ID: " + lobbyId + "-  User ID: " + userId + " - Member Disconnected");
         if(userToInput.ContainsKey(userId))
             userToInput[userId].gameObject.SetActive(false);
-
-        //Disable the ship controlled by the user, if the user is not connected after a certain amount, we will destroy the ship and its data. 
+        //Disable the ship controlled by the user, if the user is not connected after a certain amount, we will destroy the ship and its data.         
     }
 
     private void LobbyManager_OnMemberConnect(long lobbyId, long userId)
     {
-        Debug.Log("Lobby ID: " + lobbyId + "-  User ID: " + userId + " - Member Connected");
-
-        if(!userToInput.ContainsKey(userId))
+        if(Debugging)
+            Debug.Log("Lobby ID: " + lobbyId + "-  User ID: " + userId + " - Member Connected");
+        //Only when we are in a Session. 
+        // Check if the userId already have a ship in the session. 
+        // If he have a ship do nothing
+        // Otherwise Create a new ship
+        if (!userToInput.ContainsKey(userId))
         {
             Vector3 position = GetAvailableSpawnPoint();
             if (position == Vector3.down)
             {
                 position = level.spawnpoints[0].transform.position;
             }
-            Debug.Log("Spawned in new ship");
+            if (Debugging)
+                Debug.Log("Spawned in new ship");
             SpawnInOneShipForUser(userId, position);
         }
         else
         {
-            Debug.Log("Activate in old ship for user");
+            if (Debugging)
+                Debug.Log("Activate in old ship for user");
             userToInput[userId].gameObject.SetActive(true);
         }
 
-        //Only when we are in a Session. 
-        // Check if the userId already have a ship in the session. 
-        // If he have a ship do nothing
-        // Otherwise Create a new ship
+        // Make sure the member have the right data
+        // So all members have a ship, that can take in there TransformData
 
+        //byte[] data = new byte[10]; // Change to a struct of what we will send
+        //discordNetworkLayerService.SendMessegeToOneUser(userId, NetworkChannel.CONTROLLER_SYNC, data); // Maybe a new NetworkChannel?
     }
 
     public void SpawnInShipsForAllMembers()
@@ -129,7 +138,7 @@ public class SpawnLocationHandler : MonoBehaviour
         InputHandler inputHandler = obj.GetComponent<InputHandler>();
         inputHandler.userID = userID;
         userToInput.Add(userID, inputHandler);
-        if(userID == lobbyService.GetCurrentUserId())
+        if(userID == DiscordManager.CurrentUser.Id)
         {
             FindObjectOfType<UserData>().controller = inputHandler;
         }

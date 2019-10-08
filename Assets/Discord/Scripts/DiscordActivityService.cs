@@ -6,6 +6,9 @@ using Discord;
 public class DiscordActivityService : MonoBehaviour
 {
     public static DiscordActivityService INSTANCE;
+    public bool Debugging = false;
+    public bool DebugOnMessege = false;
+
 
     ActivityManager manager;
     Activity current;
@@ -56,22 +59,18 @@ public class DiscordActivityService : MonoBehaviour
     #region Subscribe Functions
     private void Manager_OnActivitySpectate(string secret)
     {
-        Debug.Log("Spectate on other player");
+        if(DebugOnMessege)
+            Debug.Log("Spectate on other player");
     }
 
     private void Manager_OnActivityJoinRequest(ref User user)
     {
         //Fires when a user asks to join the current user's game.
-        //Debug.Log(user.Username + " Request to Join");
+        if (DebugOnMessege)
+            Debug.Log(user.Username + " Request to Join");
         
         
-        //SendRequestReply(user.Id);
-       
-        //Save user until 
-
-
-        //DiscordLobbyService.INSTANCE.ConnectToLobby();
-
+        SendRequestReply(user.Id);
     }
 
     private void Manager_OnActivityJoin(string secret)
@@ -83,8 +82,10 @@ public class DiscordActivityService : MonoBehaviour
     private void Manager_OnActivityInvite(ActivityActionType type, ref User user, ref Activity activity)
     {
         //Fires when the user receives a join or spectate invite.
-        Debug.Log(user.Username + (type == ActivityActionType.Join ? " wants to Join" : " wants to Spectating"));
+        if (DebugOnMessege)
+            Debug.Log(user.Username + (type == ActivityActionType.Join ? " wants to Join" : " wants to Spectating"));
 
+        SendRequestReply(user.Id);
         //Create a Popup with Yes and No
         // Saves the user and Type in the Popup
     }
@@ -134,7 +135,7 @@ public class DiscordActivityService : MonoBehaviour
         DiscordLobbyService ls = DiscordLobbyService.INSTANCE;
 
         Lobby lob = ls.GetLobby();
-        if (ls.currentLobbyId != 0 && !lob.Locked)
+        if (DiscordLobbyService.IsOnline && !lob.Locked)
         {
             activity.Party = new ActivityParty()
             {

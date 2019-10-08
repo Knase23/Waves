@@ -9,12 +9,16 @@ public class DiscordNetworkLayerService : MonoBehaviour
 {
     public static DiscordNetworkLayerService INSTANCE;
 
+    public bool Debugging = false;
+    public bool DebugOnMessege = false;
+
     NetworkManager manager;
 
     ulong myPeerId;
     List<ulong> othersUserPeerIds = new List<ulong>();
     Dictionary<long, ulong> memberIdToPeerId = new Dictionary<long, ulong>();
     string myRoute;
+
     private void Awake()
     {
         if (INSTANCE)
@@ -34,9 +38,10 @@ public class DiscordNetworkLayerService : MonoBehaviour
         manager.OnRouteUpdate += OnRouteUpdate;
         manager.OnMessage += OnMessage;
         myPeerId = manager.GetPeerId();
+        GameManager.OnJoinedLobby += SetMyPeerId;
     }
     /// <summary>
-    /// Takes a Message and does something with it. 
+    /// Takes a Message and does something with it. Here is were most MAGIC happens
     /// </summary>
     /// <param name="peerId"></param>
     /// <param name="channelId"></param>
@@ -51,25 +56,44 @@ public class DiscordNetworkLayerService : MonoBehaviour
                 //If the data is from a client
                 // Do stuff with it.
                 InputData iData = new InputData(data);
+                if(DebugOnMessege)
+                    Debug.Log("Got Input Data from: " + iData.id);
 
-                //Might find another solution like a dictionary for this so we not go though all objects
-                InputHandler[] array = FindObjectsOfType<InputHandler>();
-                foreach (var item in array)
+                if (SpawnLocationHandler.userToInput.ContainsKey(iData.id))
                 {
-                    item.ReciveInputData(iData);
+                    SpawnLocationHandler.userToInput[iData.id].ReciveInputData(iData);
                 }
-
+                else
+                {
+                    Debug.Log("Could not find Key");
+                }
                 break;
             case NetworkChannel.LOADSCENE:
                 // if the data is from a host
                 // LoadScene and wait for map to be generated.
+
+
+
                 break;
-            case NetworkChannel.OBJECT_POSITION:
+            case NetworkChannel.SHIP_TRANSFORM:
                 //If the data is from the host
                 // update the position of that object
+
+                TransformData transformData = new TransformData(data);
+                if (DebugOnMessege)
+                    Debug.Log("Got Transform Data for: " + transformData.id);
+                if (SpawnLocationHandler.userToInput.ContainsKey(transformData.id))
+                {
+                    SpawnLocationHandler.userToInput[transformData.id].shipControl.ChangeTransform(transformData);
+                }
+                else
+                {
+                    Debug.Log("Could not find Key");
+                }
+
                 break;
             case NetworkChannel.CONTROLLER_SYNC:
-                //If the data is from the host
+                // If the data is from the host
                 // Make sure it matches
                 break;
             case NetworkChannel.SCORE_SYNC:
@@ -81,7 +105,52 @@ public class DiscordNetworkLayerService : MonoBehaviour
                 break;
         }
     }
+    /// <summary>
+    /// Makes a connection to the provided member in specified lobby
+    /// </summary>
+    /// <param name="lobbyId">Lobby to find Metadata for the member</param>
+    /// <param name="member">Member Id of the User</param>
+    public void EstablishConnectionWithMember(long lobbyId, long member)
+    {
+        if(Debugging)
+            Debug.Log("Trying to make Connection with: " + member);
+        #region Setup and Error Handling
+        if (member == DiscordManager.CurrentUser.Id)
+        {
+            if(Debugging)
+                Debug.LogWarning("Tried to connect to self, but we dissmissed it");
+            return;
+        }
 
+        if (memberIdToPeerId.ContainsKey(member))
+        {
+            if(Debugging)
+                Debug.LogWarning("Already have connection to: " + member);
+            return;
+        }
+        DiscordLobbyService.INSTANCE.SetMyMetaData("peer_id", myPeerId.ToString());
+        DiscordLobbyService.INSTANCE.SetMyMetaData("route", myRoute);
+
+        LobbyManager lobbyManager = DiscordLobbyService.INSTANCE.lobbyManager;
+        ulong peer_id = ulong.Parse(lobbyManager.GetMemberMetadataValue(lobbyId, member, "peer_id"));
+        string route = lobbyManager.GetMemberMetadataValue(lobbyId, member, "route");
+        #endregion
+
+        manager.OpenPeer(peer_id, route);
+        manager.OpenChannel(peer_id, (byte)NetworkChannel.INPUT_DATA, false);
+        manager.OpenChannel(peer_id, (byte)NetworkChannel.LOADSCENE, true);
+        manager.OpenChannel(peer_id, (byte)NetworkChannel.CONTROLLER_SYNC, true);
+        manager.OpenChannel(peer_id, (byte)NetworkChannel.SCORE_SYNC, true);
+        manager.OpenChannel(peer_id, (byte)NetworkChannel.SHIP_TRANSFORM, false);
+
+        if (!othersUserPeerIds.Contains(peer_id))
+        {
+            othersUserPeerIds.Add(peer_id);
+            memberIdToPeerId.Add(member, peer_id);
+        }
+        Debug.Log("Connection with: " + member);
+    }
+   
     private void LateUpdate()
     {
         manager.Flush();
@@ -113,7 +182,7 @@ public class DiscordNetworkLayerService : MonoBehaviour
         bool anyMessageSent = false;
         foreach (var peerId in othersUserPeerIds)
         {
-            manager.SendMessage(peerId, (byte)networkChannel, data);
+            SendMessegeToPeer(peerId, networkChannel, data);
             anyMessageSent = true;
         }
         return anyMessageSent;
@@ -127,55 +196,32 @@ public class DiscordNetworkLayerService : MonoBehaviour
     /// <returns></returns>
     public bool SendMessegeToOwnerOfLobby(NetworkChannel networkChannel, byte[] data)
     {
+        return SendMessegeToOneUser(DiscordLobbyService.INSTANCE.CurrentLobbyOwnerId, networkChannel,data);
+    }
+
+    /// <summary>
+    /// Send a Network package to a spesific user in the lobby
+    /// </summary>
+    /// <param name="userId"></param>
+    /// <param name="networkChannel"></param>
+    /// <param name="data"></param>
+    /// <returns></returns>
+    public bool SendMessegeToOneUser(long userId,NetworkChannel networkChannel, byte[] data)
+    {
         ulong peerId;
-        if (memberIdToPeerId.TryGetValue(DiscordLobbyService.INSTANCE.currentLobbyOwnerId, out peerId))
+        if (memberIdToPeerId.TryGetValue(userId, out peerId))
         {
-            manager.SendMessage(peerId, (byte)networkChannel, data);
+            SendMessegeToPeer(peerId, networkChannel, data);
             return true;
         }
         return false;
     }
 
-    /// <summary>
-    /// Makes a connection to the provided member in specified lobby
-    /// </summary>
-    /// <param name="lobbyId">Lobby to find Metadata for the member</param>
-    /// <param name="member">Member Id of the User</param>
-    public void EstablishConnectionWithMember(long lobbyId, long member)
+    private void SendMessegeToPeer(ulong peerId, NetworkChannel networkChannel, byte[] data)
     {
-        if(member == DiscordLobbyService.INSTANCE.GetCurrentUserId())
-        {
-            //Debug.LogWarning("Tried to connect to self");
-            return;
-        }
-
-        if (memberIdToPeerId.ContainsKey(member))
-        {
-            //Debug.LogWarning("Already have connection to: " + member);
-            return;
-        }
-        DiscordLobbyService.INSTANCE.SetMyMetaData("peer_id", myPeerId.ToString());
-        DiscordLobbyService.INSTANCE.SetMyMetaData("route", myRoute);
-
-        LobbyManager lobbyManager = DiscordLobbyService.INSTANCE.lobbyManager;
-        ulong peer_id = ulong.Parse(lobbyManager.GetMemberMetadataValue(lobbyId, member, "peer_id"));
-        string route = lobbyManager.GetMemberMetadataValue(lobbyId, member, "route");
-
-        manager.OpenPeer(peer_id, route);
-        manager.OpenChannel(peer_id, (byte)NetworkChannel.INPUT_DATA, true);
-        manager.OpenChannel(peer_id, (byte)NetworkChannel.LOADSCENE, true);
-        manager.OpenChannel(peer_id, (byte)NetworkChannel.CONTROLLER_SYNC, true);
-        manager.OpenChannel(peer_id, (byte)NetworkChannel.SCORE_SYNC, true);
-        manager.OpenChannel(peer_id, (byte)NetworkChannel.OBJECT_POSITION, false);
-
-        if (!othersUserPeerIds.Contains(peer_id))
-        {
-            othersUserPeerIds.Add(peer_id);
-            memberIdToPeerId.Add(member, peer_id);
-        }
-        //Debug.Log("Sucess on Connection");
-
+        manager.SendMessage(peerId, (byte)networkChannel, data);
     }
+    
 
     /// <summary>
     /// Updates so the route to the connection is correct
@@ -240,7 +286,7 @@ public enum NetworkChannel
     /// <summary>
     /// The position for a given character/ship
     /// </summary>
-    OBJECT_POSITION,
+    SHIP_TRANSFORM,
     
     /// <summary>
     /// Syncing so the player is controlling the correct ship it is controlling  

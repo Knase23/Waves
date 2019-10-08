@@ -9,13 +9,46 @@ public class DiscordLobbyService : MonoBehaviour
 {
     public static DiscordLobbyService INSTANCE;
 
+    public bool Debugging = false;
+    public bool DebugOnMessege = false;
+    //Add delegates so we can change other items when something happens when something happens
+
     public LobbyManager lobbyManager;
-
     public UserManager userManager;
-    public long currentLobbyId;
-    public string currentSecret;
-    public long currentLobbyOwnerId;
 
+    [SerializeField]
+    private long currentLobbyId = 0;
+    public long CurrentLobbyId
+    {
+        get { return currentLobbyId; }
+        set { currentLobbyId = value; }
+    }
+    private static bool isOnline = false;
+    public static bool IsOnline
+    {
+        get { return isOnline; }
+        set
+        {
+            isOnline = value;
+            GameManager.CheckOnline();
+        }
+    }
+
+    [SerializeField]
+    private string currentSecret;
+    public string CurrentSecret
+    {
+        get { return currentSecret; }
+        set { currentSecret = value; }
+    }
+
+    [SerializeField]
+    private long currentLobbyOwnerId;
+    public long CurrentLobbyOwnerId
+    {
+        get { return currentLobbyOwnerId; }
+        set { currentLobbyOwnerId = value; }
+    }
     Coroutine coroutine;
 
     private void Awake()
@@ -41,43 +74,74 @@ public class DiscordLobbyService : MonoBehaviour
         lobbyManager.OnMemberConnect += OnMemberConnect;
         lobbyManager.OnMemberUpdate += OnMemberUpdate;
         lobbyManager.OnMemberDisconnect += OnMemberDisconnect;
-        
     }
 
     private void OnMemberConnect(long lobbyId, long userId)
     {
-        if (userId != GetCurrentUserId() && lobbyManager.MemberMetadataCount(lobbyId, userId) >= 2)
+        if(DebugOnMessege)
+            Debug.Log("MemberConnected "+ userId);
+
+        if (userId != DiscordManager.CurrentUser.Id && lobbyManager.MemberMetadataCount(lobbyId, userId) >= 2)
+        {
+            if (DebugOnMessege)
+                Debug.Log("Try doing EstablishConnectionWithMember " + userId);
             DiscordNetworkLayerService.INSTANCE.EstablishConnectionWithMember(lobbyId, userId);
+        }
     }
     private void OnMemberUpdate(long lobbyId, long userId)
     {
-        if(userId != GetCurrentUserId() && lobbyManager.MemberMetadataCount(lobbyId, userId) >= 2)
-            DiscordNetworkLayerService.INSTANCE.UpdateAPeer(lobbyId,userId);
+        //Debug.Log("MemberUpdate " + userId);
+        if (userId != DiscordManager.CurrentUser.Id && lobbyManager.MemberMetadataCount(lobbyId, userId) >= 2)
+        {
+            if (DebugOnMessege)
+                Debug.Log("Try doing EstablishConnectionWithMember " + userId);
+            DiscordNetworkLayerService.INSTANCE.UpdateAPeer(lobbyId, userId);
+        }
     }
     private void OnMemberDisconnect(long lobbyId, long userId)
     {
+        if (DebugOnMessege)
+            Debug.Log("MemberDisconnect " + userId);
         DiscordNetworkLayerService.INSTANCE.DisconnectPeer(userId);
     }
 
     private void Update()
     {
-        if (coroutine == null && currentLobbyId != 0)
+        if (coroutine == null && IsOnline)
         {
             coroutine = StartCoroutine(UpdateLobbyTransaction());
+        }
+        CheckOnlineStatus();
+    }
+    private void CheckOnlineStatus()
+    {
+        if (CurrentLobbyId != 0)
+        {
+            if (!isOnline)
+            {
+                IsOnline = true;
+            }
+        }
+        else
+        {
+            if (isOnline)
+            {
+                IsOnline = false;
+            }
         }
     }
     private void OnLobbyUpdate(long lobbyId)
     {
         foreach (var member in GetLobbyMembers())
         {
-            if (member.Id != GetCurrentUserId() && lobbyManager.MemberMetadataCount(lobbyId, member.Id) >= 2)
+            if (member.Id != DiscordManager.CurrentUser.Id && lobbyManager.MemberMetadataCount(lobbyId, member.Id) >= 2)
                 DiscordNetworkLayerService.INSTANCE.EstablishConnectionWithMember(lobbyId, member.Id);
         }
     }
     // Functions to Use to Call from other scripts
     public void CreateLobby()
     {
-        if (currentLobbyId != 0)
+        if (IsOnline)
             return;
 
         var txn = lobbyManager.GetLobbyCreateTransaction();
@@ -86,17 +150,16 @@ public class DiscordLobbyService : MonoBehaviour
         lobbyManager.CreateLobby(txn, (Result result, ref Lobby lobby) =>
         {
             SetCurrent(lobby.Id, lobby.Secret, lobby.OwnerId);
-            DiscordNetworkLayerService.INSTANCE.SetMyPeerId();
             NewUpdateLobbyTransaction();
         });
     }
     public void UpdateLobbySize(uint numberOfLocalPlayersConnected)
     {
-        if (currentLobbyId == 0)
+        if (!IsOnline)
             return;
-        var transaction = lobbyManager.GetLobbyUpdateTransaction(currentLobbyId);
+        var transaction = lobbyManager.GetLobbyUpdateTransaction(CurrentLobbyId);
         transaction.SetCapacity(5 - numberOfLocalPlayersConnected);
-        lobbyManager.UpdateLobby(currentLobbyId, transaction, (Result result) =>
+        lobbyManager.UpdateLobby(CurrentLobbyId, transaction, (Result result) =>
          {
              if (result != Result.Ok)
                  Debug.Log(result);
@@ -105,11 +168,11 @@ public class DiscordLobbyService : MonoBehaviour
 
     public void DisconnectLobby()
     {
-        if (currentLobbyId == 0)
+        if (!IsOnline)
             return;
-
-        Debug.Log("Try to leave lobby");
-        lobbyManager.DisconnectLobby(currentLobbyId, (Result result) =>
+        if(Debugging)
+            Debug.Log("Try to leave lobby");
+        lobbyManager.DisconnectLobby(CurrentLobbyId, (Result result) =>
         {
             if (result != Result.Ok)
                 Debug.Log(result);
@@ -123,13 +186,14 @@ public class DiscordLobbyService : MonoBehaviour
     }
     public void RemoveLobby()
     {
-        if(currentLobbyId == 0)
+        if (!IsOnline)
             return;
 
-        if (currentLobbyOwnerId != GetCurrentUserId())
+        if (CurrentLobbyOwnerId != DiscordManager.CurrentUser.Id)
             return;
-        
-        lobbyManager.DeleteLobby(currentLobbyId, (result)=>{
+
+        lobbyManager.DeleteLobby(CurrentLobbyId, (result) =>
+        {
             if (result != Result.Ok)
                 Debug.Log(result);
             else
@@ -146,8 +210,6 @@ public class DiscordLobbyService : MonoBehaviour
             if (result == Result.Ok)
             {
                 SetCurrent(lobby.Id, lobby.Secret, lobby.OwnerId);
-                DiscordNetworkLayerService.INSTANCE.SetMyPeerId();
-
             }
             else
             {
@@ -178,50 +240,37 @@ public class DiscordLobbyService : MonoBehaviour
 
     public Lobby GetLobby()
     {
-        if (lobbyManager == null || currentLobbyId == 0)
+        if (lobbyManager == null || !IsOnline)
             return new Lobby();
 
-        return lobbyManager.GetLobby(currentLobbyId);
+        return lobbyManager.GetLobby(CurrentLobbyId);
     }
     public int GetMemberCount()
     {
         if (lobbyManager == null)
             return 0;
 
-        return lobbyManager.MemberCount(currentLobbyId);
+        return lobbyManager.MemberCount(CurrentLobbyId);
     }
     public IEnumerable<User> GetLobbyMembers()
     {
-        if (currentLobbyId == 0)
+        if (!IsOnline)
             return null;
-        return lobbyManager.GetMemberUsers(currentLobbyId);
+        return lobbyManager.GetMemberUsers(CurrentLobbyId);
     }
 
 
     // Statements 
     public bool IsTheHost()
     {
-        return currentLobbyOwnerId == 0 || userManager.GetCurrentUser().Id == currentLobbyOwnerId;
+        return CurrentLobbyOwnerId == 0 || userManager.GetCurrentUser().Id == CurrentLobbyOwnerId;
     }
-    public bool Offline()
-    {
-        return currentLobbyId == 0;
-    }
-    public bool Online()
-    {
-        return currentLobbyId != 0;
-    }
-    public long GetCurrentUserId()
-    {
-        return userManager.GetCurrentUser().Id;
-    }
-
     //Functions for this script
     private void SetCurrent(long lobbyId, string secret, long ownerId)
     {
-        currentLobbyId = lobbyId;
-        currentSecret = secret;
-        currentLobbyOwnerId = ownerId;
+        CurrentLobbyId = lobbyId;
+        CurrentSecret = secret;
+        CurrentLobbyOwnerId = ownerId;
     }
 
 
@@ -235,12 +284,12 @@ public class DiscordLobbyService : MonoBehaviour
 
     void NewUpdateLobbyTransaction()
     {
-        if (currentLobbyId == 0)
+        if (!IsOnline)
             return;
 
-        var transaction = lobbyManager.GetLobbyUpdateTransaction(currentLobbyId);
+        var transaction = lobbyManager.GetLobbyUpdateTransaction(CurrentLobbyId);
 
-#region Set Meta Data For Lobby
+        #region Set Meta Data For Lobby
         if (SceneManager.GetActiveScene().name == "Game")
         {
             transaction.SetLocked(true);
@@ -249,9 +298,9 @@ public class DiscordLobbyService : MonoBehaviour
         {
             transaction.SetLocked(false);
         }
-#endregion
+        #endregion
 
-        lobbyManager.UpdateLobby(currentLobbyId, transaction, (newResult) =>
+        lobbyManager.UpdateLobby(CurrentLobbyId, transaction, (newResult) =>
         {
             if (newResult == Result.Ok)
             {
@@ -264,36 +313,40 @@ public class DiscordLobbyService : MonoBehaviour
         });
     }
 
-    public void SetMetaDataOfMember(long userid,string key,string value)
+    public void SetMetaDataOfMember(long userid, string key, string value)
     {
         if (userid == 0)
             return;
-
-        var memberTransaction = lobbyManager.GetMemberUpdateTransaction(currentLobbyId, userid);
+        if (Debugging)
+            Debug.Log("SetMetaData: UserID: " + userid + " Key: " + key + " Value: " + value);
+        var memberTransaction = lobbyManager.GetMemberUpdateTransaction(CurrentLobbyId, userid);
         memberTransaction.SetMetadata(key, value);
-        lobbyManager.UpdateMember(currentLobbyId, userid, memberTransaction, (result) =>
+        lobbyManager.UpdateMember(CurrentLobbyId, userid, memberTransaction, (result) =>
            {
                if (result != Result.Ok)
                    Debug.Log(result);
            });
+
     }
     public void SetMyMetaData(string key, string value)
     {
-        if(currentLobbyId == 0)
+        if (!IsOnline)
         {
             return;
         }
-        var memberTransaction = lobbyManager.GetMemberUpdateTransaction(currentLobbyId, GetCurrentUserId());
+        if (Debugging)
+            Debug.Log("SetMetaData: UserID: " + DiscordManager.CurrentUser.Id + " Key: " + key + " Value: " + value);
+        var memberTransaction = lobbyManager.GetMemberUpdateTransaction(CurrentLobbyId, DiscordManager.CurrentUser.Id);
         memberTransaction.SetMetadata(key, value);
-        lobbyManager.UpdateMember(currentLobbyId, GetCurrentUserId(), memberTransaction, (result) =>
+        lobbyManager.UpdateMember(CurrentLobbyId, DiscordManager.CurrentUser.Id, memberTransaction, (result) =>
         {
             if (result != Result.Ok)
                 Debug.Log(result);
         });
         //Debug.Log("Setted: " + key + " : " + value);
     }
-    public string GetMetaDataOfMember(long userid,string key)
+    public string GetMetaDataOfMember(long userid, string key)
     {
-        return lobbyManager.GetMemberMetadataValue(currentLobbyId, userid, key);
+        return lobbyManager.GetMemberMetadataValue(CurrentLobbyId, userid, key);
     }
 }

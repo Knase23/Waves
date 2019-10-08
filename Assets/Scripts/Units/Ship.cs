@@ -6,7 +6,7 @@ using UnityEngine;
 public class Ship : MonoBehaviour, IPlayerShipControl, IDamagable
 {
     public float movmentSpeed = 10;
-    public float rotationSpeed = 2;
+    public float rotationSpeed = 10;
 
     public Color shipColor = Color.green;
 
@@ -39,12 +39,36 @@ public class Ship : MonoBehaviour, IPlayerShipControl, IDamagable
 
     private Rigidbody rb;
 
+    private long userId;
+    private float vertical;
+    private float horizontal;
+
+
     private void Start()
     {
         hp.OnDeath += OnDeath;
         rb = GetComponent<Rigidbody>();
     }
+    private void Update()
+    {
+        #region Movement
+        Vector3 increment = vertical * transform.forward * Time.deltaTime * movmentSpeed;
+        rb.velocity += increment;
+        transform.Rotate(horizontal * Vector3.up * rotationSpeed * Time.deltaTime);
+        transform.rotation = Quaternion.Euler(0, transform.rotation.eulerAngles.y, 0);
 
+        if (DiscordLobbyService.INSTANCE.IsTheHost())
+        {
+            TransformData movementData = new TransformData(transform.position, transform.rotation, userId);
+            if (latestTransformUpdate != movementData)
+            {
+                latestTransformUpdate = movementData;
+                DiscordNetworkLayerService.INSTANCE.SendMessegeToAllOthers(NetworkChannel.SHIP_TRANSFORM, movementData.ToBytes());
+            }
+
+        }
+        #endregion
+    }
     public void StoreUpgrade(Upgrade upgrade)
     {
         if (upgrade == null)
@@ -66,14 +90,14 @@ public class Ship : MonoBehaviour, IPlayerShipControl, IDamagable
     #region IPlayerShipControl Functions
 
     #region Action 1
-    public void ActionOne()
+    public void ActionOne(long userId)
     {
         if (actionOne == null)
             return;
 
         actionOne.Execute();
     }
-    public void ActionOneUpgrade()
+    public void ActionOneUpgrade(long userId)
     {
         if (actionOne == null)
             return;
@@ -82,14 +106,14 @@ public class Ship : MonoBehaviour, IPlayerShipControl, IDamagable
     #endregion
 
     #region Action 2
-    public void ActionTwo()
+    public void ActionTwo(long userId)
     {
         if (actionTwo == null)
             return;
 
         actionTwo.Execute();
     }
-    public void ActionTwoUpgrade()
+    public void ActionTwoUpgrade(long userId)
     {
         if (actionTwo == null)
             return;
@@ -99,14 +123,14 @@ public class Ship : MonoBehaviour, IPlayerShipControl, IDamagable
     #endregion
 
     #region Action 3
-    public void ActionThree()
+    public void ActionThree(long userId)
     {
         if (actionThree == null)
             return;
 
         actionThree.Execute();
     }
-    public void ActionThreeUpgrade()
+    public void ActionThreeUpgrade(long userId)
     {
         if (actionThree == null)
             return;
@@ -114,26 +138,20 @@ public class Ship : MonoBehaviour, IPlayerShipControl, IDamagable
         actionThree.ApplyUpgrade(this, storedUpgrade);
     }
     #endregion
-
+    TransformData latestTransformUpdate;
     #region Movement
-    public void Move(float horizontal, float vertical)
+    public void Move(float horizontal, float vertical, long userId)
     {
-        Vector3 increment = vertical * transform.forward * Time.deltaTime * movmentSpeed;
-        rb.velocity += increment;
-        transform.Rotate(horizontal * Vector3.up * rotationSpeed);
-        transform.rotation = Quaternion.Euler(0, transform.rotation.eulerAngles.y, 0);
-
-        if (DiscordLobbyService.INSTANCE.IsTheHost())
-        {
-            MovementData movementData = new MovementData(transform.position.x, transform.position.y, 0);
-            DiscordNetworkLayerService.INSTANCE.SendMessegeToAllOthers(NetworkChannel.OBJECT_POSITION, movementData.ToBytes());
-        }
-
+        this.userId = userId;
+        this.horizontal = horizontal;
+        this.vertical = vertical;
     }
 
-    public void Move(Vector3 position)
+    
+    public void ChangeTransform(TransformData transformData)
     {
-        transform.position = position;
+        transform.position = transformData.position;
+        transform.rotation = transformData.rotation;
     }
     #endregion
 
@@ -155,60 +173,72 @@ public class Ship : MonoBehaviour, IPlayerShipControl, IDamagable
     #endregion
 }
 
-public struct MovementData
+public struct TransformData
 {
-    public float x, y;
-
+    public Vector3 position;
+    public Quaternion rotation;
     public long id;
-    public MovementData(float x, float y, long id)
+    public TransformData(Vector3 position,Quaternion rotation ,long id)
     {
-        this.x = x;
-        this.y = y;
+        this.position = position;
+        this.rotation = rotation;
         this.id = id;
-
+        
     }
-    public MovementData(byte[] data)
+    public TransformData(byte[] data)
     {
-        x = BitConverter.ToSingle(data, 0);
-        y = BitConverter.ToSingle(data, 4);
-        id = BitConverter.ToInt64(data, 8);
+        position.x = BitConverter.ToSingle(data, 0);
+        position.y = BitConverter.ToSingle(data, 4);
+        position.z = BitConverter.ToSingle(data, 8);
+        rotation.x = BitConverter.ToSingle(data, 12);
+        rotation.y = BitConverter.ToSingle(data, 16);
+        rotation.z = BitConverter.ToSingle(data, 20);
+        rotation.w = BitConverter.ToSingle(data, 24);
+        id = BitConverter.ToInt64(data, 28);
     }
     public byte[] ToBytes()
     {
         List<byte> vs = new List<byte>();
 
-        vs.AddRange(BitConverter.GetBytes(x));
-        vs.AddRange(BitConverter.GetBytes(y));
+        vs.AddRange(BitConverter.GetBytes(position.x));
+        vs.AddRange(BitConverter.GetBytes(position.y));
+        vs.AddRange(BitConverter.GetBytes(position.z));
+
+        vs.AddRange(BitConverter.GetBytes(rotation.x));
+        vs.AddRange(BitConverter.GetBytes(rotation.y));
+        vs.AddRange(BitConverter.GetBytes(rotation.z));
+        vs.AddRange(BitConverter.GetBytes(rotation.w));
+
         vs.AddRange(BitConverter.GetBytes(id));
         return vs.ToArray();
     }
 
     public override bool Equals(object obj)
     {
-        if (!(obj is MovementData))
+        if (!(obj is TransformData))
         {
             return false;
         }
 
-        var data = (MovementData)obj;
+        var data = (TransformData)obj;
         return data == this;
     }
 
     public override int GetHashCode()
     {
-        var hashCode = 1315532907;
-        hashCode = hashCode * -1521134295 + x.GetHashCode();
-        hashCode = hashCode * -1521134295 + y.GetHashCode();
+        var hashCode = 1745363393;
+        hashCode = hashCode * -1521134295 + EqualityComparer<Vector3>.Default.GetHashCode(position);
+        hashCode = hashCode * -1521134295 + EqualityComparer<Quaternion>.Default.GetHashCode(rotation);
         hashCode = hashCode * -1521134295 + id.GetHashCode();
         return hashCode;
     }
 
-    public static bool operator ==(MovementData left, MovementData right)
+    public static bool operator ==(TransformData left, TransformData right)
     {
-        return left.id == right.id && left.x == right.x && left.y == right.y;
+        return left.id == right.id && left.position == right.position && left.rotation == right.rotation;
     }
-    public static bool operator !=(MovementData left, MovementData right)
+    public static bool operator !=(TransformData left, TransformData right)
     {
-        return left.id != right.id || left.x != right.x || left.y != right.y;
+        return left.id != right.id || left.position != right.position || left.rotation != right.rotation;
     }
 }

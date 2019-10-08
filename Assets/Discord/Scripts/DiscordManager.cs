@@ -9,6 +9,15 @@ public class DiscordManager : MonoBehaviour
 
 
     public const long CLIENT_ID = 574643243728240642;
+
+    [SerializeField]
+    private static Discord.User currentUser;
+    public static Discord.User CurrentUser
+    {
+        get { return currentUser; }
+        set { currentUser = value; }
+    }
+
     private void Awake()
     {
         if (INSTANCE)
@@ -44,13 +53,19 @@ public class DiscordManager : MonoBehaviour
         */
         discord = new Discord.Discord(CLIENT_ID, (System.UInt64)Discord.CreateFlags.Default);
         //discord = new Discord.Discord(ApplicationId, (System.UInt64)Discord.CreateFlags.Default);
-
+        Invoke("UpdateCurrentUser", 1);
     }
 
     // Update is called once per frame
     void Update()
     {
         discord.RunCallbacks();
+        
+    }
+
+    public void UpdateCurrentUser()
+    {
+        CurrentUser = discord.GetUserManager().GetCurrentUser();
     }
 
     public Discord.Discord GetDiscord()
