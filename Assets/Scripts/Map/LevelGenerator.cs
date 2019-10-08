@@ -33,6 +33,7 @@ public class LevelGenerator : MonoBehaviour
     internal Vector3 minPosition;
     private List<GameObject> confirmedPlacements = new List<GameObject>();
     public List<GameObject> spawnpoints = new List<GameObject>();
+    SpawnLocationHandler spawnHandler;
     /// <summary>
     /// Generates a map of astiods with the given prefabs
     /// </summary>
@@ -69,8 +70,12 @@ public class LevelGenerator : MonoBehaviour
         // Done with Obsticles in level
 
         // Generate Locations for spawn positions for all players
-    
-        spawnpoints.AddRange(Sampling.SampleGenerating(numberOfSpawnPoints,new SpawnPointSample(),new GameObject("Spawn Point"),maxPosition,minPosition, spawnPointTransform));
+        if(spawnHandler == null)
+        {
+            spawnHandler = GetComponent<SpawnLocationHandler>();
+        }
+        spawnpoints.Clear();
+        spawnpoints.AddRange(Sampling.SampleGenerating(numberOfSpawnPoints, spawnHandler.placementRules, spawnHandler.spawnPointPrefab,maxPosition,minPosition, spawnPointTransform));
         // Generate Pick Up spawn positions
 
         // Done with all level Setups

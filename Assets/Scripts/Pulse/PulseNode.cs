@@ -88,9 +88,12 @@ public class PulseNode : MonoBehaviour
             if (damagable != null)
             {
                 damagable.TakeDamage(strength);
+                gameObject.SetActive(false);
             }
-            gameObject.SetActive(false);
-
+            if(other.tag == "Asteriod" && !other.isTrigger)
+            {
+                gameObject.SetActive(false);
+            }
         }
 
     }

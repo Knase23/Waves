@@ -41,6 +41,7 @@ public class DiscordLobbyService : MonoBehaviour
         lobbyManager.OnMemberConnect += OnMemberConnect;
         lobbyManager.OnMemberUpdate += OnMemberUpdate;
         lobbyManager.OnMemberDisconnect += OnMemberDisconnect;
+        
     }
 
     private void OnMemberConnect(long lobbyId, long userId)
@@ -80,7 +81,7 @@ public class DiscordLobbyService : MonoBehaviour
             return;
 
         var txn = lobbyManager.GetLobbyCreateTransaction();
-        txn.SetCapacity(5);
+        txn.SetCapacity(10);
         txn.SetType(LobbyType.Public);
         lobbyManager.CreateLobby(txn, (Result result, ref Lobby lobby) =>
         {
