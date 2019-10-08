@@ -102,7 +102,14 @@ public class DiscordLobbyService : MonoBehaviour
     {
         if (DebugOnMessege)
             Debug.Log("MemberDisconnect " + userId);
+
         DiscordNetworkLayerService.INSTANCE.DisconnectPeer(userId);
+
+        if (currentLobbyOwnerId == userId)
+        {
+            //Give hosting to someone else and join them
+            DisconnectLobby();
+        }
     }
 
     private void Update()
@@ -175,13 +182,16 @@ public class DiscordLobbyService : MonoBehaviour
         lobbyManager.DisconnectLobby(CurrentLobbyId, (Result result) =>
         {
             if (result != Result.Ok)
+            {
                 Debug.Log(result);
+            }
             else
             {
                 Debug.Log("Left Lobby");
                 SetCurrent(0, string.Empty, 0);
             }
         });
+
         DiscordActivityService.INSTANCE.Activity(new DiscordActivityService.ActivityInformation());
     }
     public void RemoveLobby()
