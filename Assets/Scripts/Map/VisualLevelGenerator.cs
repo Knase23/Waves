@@ -33,13 +33,13 @@ public class VisualLevelGenerator : MonoBehaviour
     public IEnumerator StartGenerate()
     {
         //Large
-        coroutine = StartCoroutine(VisualRepresentationOfSampling(generator.numberOfLargeWanted, generator.largeAstroidPrefabs.GetComponent<Asteriod>().placementRules, generator.largeAstroidPrefabs, new Vector3(generator.mapSize.x, 0, generator.mapSize.y), new Vector3(-generator.mapSize.x, 0, -generator.mapSize.y), generator.largeTransform, numberOfRejections: generator.maxNumberOfFailedPlacements));
+        coroutine = StartCoroutine(VisualRepresentationOfSampling(generator.numberOfLargeWanted, generator.largeAstroidPrefabs.GetComponent<Asteriod>().placementRules, generator.largeAstroidPrefabs, generator.maxPosition, generator.minPosition, generator.largeTransform, numberOfRejections: generator.maxNumberOfFailedPlacements));
         yield return new WaitUntil(() => coroutine == null);
         //Medium
-        coroutine = StartCoroutine(VisualRepresentationOfSampling(generator.numberOfMediumWanted, generator.mediumAstroidPrefabs.GetComponent<Asteriod>().placementRules, generator.mediumAstroidPrefabs, new Vector3(generator.mapSize.x, 0, generator.mapSize.y), new Vector3(-generator.mapSize.x, 0, -generator.mapSize.y), generator.mediumTransform, numberOfRejections: generator.maxNumberOfFailedPlacements));
+        coroutine = StartCoroutine(VisualRepresentationOfSampling(generator.numberOfMediumWanted, generator.mediumAstroidPrefabs.GetComponent<Asteriod>().placementRules, generator.mediumAstroidPrefabs, generator.maxPosition, generator.minPosition, generator.mediumTransform, numberOfRejections: generator.maxNumberOfFailedPlacements));
         yield return new WaitUntil(() => coroutine == null);
         //Small
-        coroutine = StartCoroutine(VisualRepresentationOfSampling(generator.numberOfSmallWanted, generator.smallAstroidPrefabs.GetComponent<Asteriod>().placementRules, generator.smallAstroidPrefabs, new Vector3(generator.mapSize.x, 0, generator.mapSize.y), new Vector3(-generator.mapSize.x, 0, -generator.mapSize.y), generator.smallTransform, numberOfRejections: generator.maxNumberOfFailedPlacements));
+        coroutine = StartCoroutine(VisualRepresentationOfSampling(generator.numberOfSmallWanted, generator.smallAstroidPrefabs.GetComponent<Asteriod>().placementRules, generator.smallAstroidPrefabs, generator.maxPosition, generator.minPosition, generator.smallTransform, numberOfRejections: generator.maxNumberOfFailedPlacements));
         yield return new WaitUntil(() => coroutine == null);
         Debug.Log("Level Generation Complete");
         generateCoroutine = null;

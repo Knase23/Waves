@@ -128644,7 +128644,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mapTransform: {fileID: 9043417442131496020}
   spawnPointTransform: {fileID: 4466382081518513500}
-  mapSize: {x: 100, y: 100}
+  maxPosition: {x: 100, y: 0, z: 100}
+  minPosition: {x: -100, y: 0, z: -100}
   largeAstroidPrefabs: {fileID: 8660959093653358525, guid: 07ae680e90ec3df4897105165df2611d,
     type: 3}
   mediumAstroidPrefabs: {fileID: 3995305248111667548, guid: 2b8b4c97e82330f4ea30bcfd2e84680d,
@@ -128675,6 +128676,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   shipPrefab: {fileID: 0}
+  spawnPointPrefab: {fileID: 0}
+  placementRules: {fileID: 0}
+  Debugging: 0
 --- !u!1 &9043417440725720360
 GameObject:
   m_ObjectHideFlags: 0

@@ -6,9 +6,12 @@ using System;
 
 public class LevelGenerator : MonoBehaviour
 {
+    public bool GenerateOnStart = true;
+
     public Transform mapTransform;
     public Transform spawnPointTransform;
-    public Vector2Int mapSize;
+    public Vector3 maxPosition = new Vector3(100, 0, 100);
+    public Vector3 minPosition = new Vector3(-100, 0, -100);
 
     [Header("Astriod prefabs")]
     public GameObject largeAstroidPrefabs;
@@ -29,11 +32,14 @@ public class LevelGenerator : MonoBehaviour
     public int numberOfSpawnPoints = 10;
     [Header("Debugging")]
     public int totalOfConfirmedObjects = 0;
-    internal Vector3 maxPosition;
-    internal Vector3 minPosition;
+    
     private List<GameObject> confirmedPlacements = new List<GameObject>();
     public List<GameObject> spawnpoints = new List<GameObject>();
     SpawnLocationHandler spawnHandler;
+    private void Start()
+    {
+        GenerateLevel();
+    }
     /// <summary>
     /// Generates a map of astiods with the given prefabs
     /// </summary>
@@ -50,12 +56,7 @@ public class LevelGenerator : MonoBehaviour
         totalOfConfirmedObjects = 0;
 
         //List of all created Objects, used later for Networking
-        List<GameObject> allGeneratedObjects = new List<GameObject>();
-
-        //Setup the area for were we can spawn in the Asteriods
-        maxPosition = new Vector3(mapSize.x, 0, mapSize.y);
-        minPosition = new Vector3(-mapSize.x, 0, -mapSize.y);
-        
+        List<GameObject> allGeneratedObjects = new List<GameObject>();        
         
         //Spawn in Large Asteriods with there placement rules. within setup area.
         allGeneratedObjects.AddRange(Sampling.SampleGenerating(numberOfLargeWanted, largeAstroidPrefabs.GetComponent<Asteriod>().placementRules, largeAstroidPrefabs, maxPosition, minPosition, largeTransform, numberOfRejections: maxNumberOfFailedPlacements));
@@ -74,13 +75,16 @@ public class LevelGenerator : MonoBehaviour
         {
             spawnHandler = GetComponent<SpawnLocationHandler>();
         }
-        spawnpoints.Clear();
-        spawnpoints.AddRange(Sampling.SampleGenerating(numberOfSpawnPoints, spawnHandler.placementRules, spawnHandler.spawnPointPrefab,maxPosition,minPosition, spawnPointTransform));
+        if (GetComponent<SpawnLocationHandler>().enabled)
+        {
+            spawnpoints.Clear();
+            spawnpoints.AddRange(Sampling.SampleGenerating(numberOfSpawnPoints, spawnHandler.placementRules, spawnHandler.spawnPointPrefab, maxPosition, minPosition, spawnPointTransform));
+        }
         // Generate Pick Up spawn positions
 
         // Done with all level Setups
         
-        // Send a Network Package to all Clients, this must be TCP, We need to have identical maps.
+        // Send a Network Package to all Clients, this must be Relaiable, We need to have identical maps.
         /*
          * Network Code Stuff
          * 

@@ -52,6 +52,7 @@ public class DiscordManager : MonoBehaviour
             Therefore, always keep Discord running during tests, or use Discord.CreateFlags.NoRequireDiscord
         */
         discord = new Discord.Discord(CLIENT_ID, (System.UInt64)Discord.CreateFlags.Default);
+        
         //discord = new Discord.Discord(ApplicationId, (System.UInt64)Discord.CreateFlags.Default);
         Invoke("UpdateCurrentUser", 1);
     }
