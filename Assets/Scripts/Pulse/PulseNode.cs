@@ -22,13 +22,13 @@ public class PulseNode : MonoBehaviour
     /// </summary>
     public float strength;
 
-    public static PulseNode CreateNode(Pulse pulse, float curAngle, float distanceFromCenter, float strength, Transform maker, Color makerColor)
+    public static PulseNode CreateNode(Pulse pulse, float curAngle, float distanceFromCenter, float strength)
     {
         GameObject gameObject = new GameObject("Node");
         gameObject.transform.parent = pulse.transform;
         PulseNode node = gameObject.AddComponent<PulseNode>();
         node.transform.localPosition = new Vector3(Mathf.Cos(Mathf.Deg2Rad * curAngle) * distanceFromCenter, 0, Mathf.Sin(Mathf.Deg2Rad * curAngle) * distanceFromCenter);
-        node.InitNode(gameObject, strength, maker, makerColor);
+        node.InitNode(gameObject, strength);
         return node;
     }
 
@@ -36,14 +36,14 @@ public class PulseNode : MonoBehaviour
     {
         Statistics.instance.numberOfNodes++;
     }
-    public void InitNode(GameObject center, float strength, Transform makerOfPulse, Color makerColor)
+    public void InitNode(GameObject center, float strength)
     {
         this.center = center;
         directionFromCenter = new Vector3(transform.localPosition.x, transform.localPosition.y, transform.localPosition.z);
         directionFromCenter.Normalize();
         this.strength = strength;
-        this.makerOfPulse = makerOfPulse;
-        this.makerColor = makerColor;
+        //this.makerOfPulse = makerOfPulse;
+        //this.makerColor = makerColor;
     }
     public void CreateLineBetweenNodes()
     {
@@ -126,7 +126,7 @@ public class PulseNode : MonoBehaviour
         //Make the gameobject into a node. 
         PulseNode newNodeScript = node.AddComponent<PulseNode>();
         // Sets all values to the correct values based on the Node that creates the new node.
-        newNodeScript.InitNode(center, strength, makerOfPulse, makerColor);
+        newNodeScript.InitNode(center, strength);
 
         //Add in the nodes neighbours. And change the 
         newNodeScript.SetNeighbours(right, this);

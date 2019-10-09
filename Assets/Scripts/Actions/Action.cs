@@ -10,16 +10,16 @@ public abstract class Action : MonoBehaviour
 
     private float timer;
 
-    public void Execute()
+    public void Execute(long userId)
     {
         if(timer <= 0)
         {
-            ActionExecute();
+            ActionExecute(userId);
             timer = cooldownTime;
         }
     }
 
-    protected abstract void ActionExecute();
+    protected abstract void ActionExecute(long userId);
     public void Update()
     {
         timer -= Time.deltaTime;

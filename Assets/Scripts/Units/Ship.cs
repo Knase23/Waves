@@ -95,7 +95,7 @@ public class Ship : MonoBehaviour, IPlayerShipControl, IDamagable
         if (actionOne == null)
             return;
 
-        actionOne.Execute();
+        actionOne.Execute(userId);
     }
     public void ActionOneUpgrade(long userId)
     {
@@ -111,7 +111,7 @@ public class Ship : MonoBehaviour, IPlayerShipControl, IDamagable
         if (actionTwo == null)
             return;
 
-        actionTwo.Execute();
+        actionTwo.Execute(userId);
     }
     public void ActionTwoUpgrade(long userId)
     {
@@ -128,7 +128,7 @@ public class Ship : MonoBehaviour, IPlayerShipControl, IDamagable
         if (actionThree == null)
             return;
 
-        actionThree.Execute();
+        actionThree.Execute(userId);
     }
     public void ActionThreeUpgrade(long userId)
     {

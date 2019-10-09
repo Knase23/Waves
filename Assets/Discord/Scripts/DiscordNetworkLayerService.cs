@@ -71,9 +71,6 @@ public class DiscordNetworkLayerService : MonoBehaviour
             case NetworkChannel.LOADSCENE:
                 // if the data is from a host
                 // LoadScene and wait for map to be generated.
-
-
-
                 break;
             case NetworkChannel.SHIP_TRANSFORM:
                 //If the data is from the host
@@ -93,12 +90,23 @@ public class DiscordNetworkLayerService : MonoBehaviour
 
                 break;
             case NetworkChannel.CONTROLLER_SYNC:
-                // If the data is from the host
-                // Make sure it matches
+                // If the data is from a client
+                // Send data to it
+                SyncShipPositionRequest request = new SyncShipPositionRequest(data);
+                SpawnLocationHandler.RequestFromMemberOfShipPositions(request.id);
+                
+
                 break;
             case NetworkChannel.SCORE_SYNC:
                 //If the data is from the host
                 // Make the score display the right numbers for each player.
+                break;
+            case NetworkChannel.SPAWN_PULSE:
+                //If the data is from the host
+                // Make the score display the right numbers for each player.
+                PulseData pulseData = new PulseData(data);
+                Pulse.CreatePulse(pulseData);
+
                 break;
             default:
                 Debug.Log(peerId + " : Sent messege was not reognized");
@@ -142,6 +150,7 @@ public class DiscordNetworkLayerService : MonoBehaviour
         manager.OpenChannel(peer_id, (byte)NetworkChannel.CONTROLLER_SYNC, true);
         manager.OpenChannel(peer_id, (byte)NetworkChannel.SCORE_SYNC, true);
         manager.OpenChannel(peer_id, (byte)NetworkChannel.SHIP_TRANSFORM, false);
+        manager.OpenChannel(peer_id, (byte)NetworkChannel.SPAWN_PULSE, true);
 
         if (!othersUserPeerIds.Contains(peer_id))
         {
@@ -296,5 +305,7 @@ public enum NetworkChannel
     /// Syncing so the score is displayed right
     /// </summary>
     SCORE_SYNC,
+
+    SPAWN_PULSE
 
 }

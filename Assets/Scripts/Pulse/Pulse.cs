@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -12,17 +13,29 @@ public class Pulse : MonoBehaviour
     private float maxDistance = 10;
     private float previousDistanceFromCenter = 0;
 
-    public static void CreatePulse(float speed, float strength, float maxDistance, Transform maker, Color makerColor, Transform parent = null)
+    public static void CreatePulse(float speed, float strength, float maxDistance, long userId)
     {
         GameObject gameObject = new GameObject("Pulse");
-        gameObject.transform.position = maker.position;
-        gameObject.transform.parent = parent;
+        InputHandler inputHandler = SpawnLocationHandler.userToInput[userId];
+        gameObject.transform.position = inputHandler.transform.position;
+        gameObject.transform.parent = inputHandler.transform;
         Pulse pulse = gameObject.AddComponent<Pulse>();
-        pulse.Init(speed, strength, maxDistance, maker, makerColor);
+        pulse.Init(speed, strength, maxDistance,inputHandler.UserId);
+    }
+    public static void CreatePulse(PulseData pulseData)
+    {
+        GameObject gameObject = new GameObject("Pulse");
+
+        InputHandler inputHandler = SpawnLocationHandler.userToInput[pulseData.userId];
+        gameObject.transform.position = inputHandler.transform.position;
+        gameObject.transform.parent = inputHandler.transform;
+
+        Pulse pulse = gameObject.AddComponent<Pulse>();
+        pulse.Init(pulseData.speed, pulseData.strength, pulseData.maxDistance, inputHandler.UserId);
     }
 
     // Start is called before the first frame update
-    public void Init(float speed,float strength, float maxDistance, Transform maker, Color makerColor, int degreesPerSegment = 45,float distanceFromCenter = 1f, bool expand = true)
+    public void Init(float speed, float strength, float maxDistance, long userId, int degreesPerSegment = 45, float distanceFromCenter = 1f, bool expand = true)
     {
         Statistics.instance.numberOfShips++;
         this.distanceFromCenter = distanceFromCenter;
@@ -32,11 +45,11 @@ public class Pulse : MonoBehaviour
         PulseNode previousNode = null;
         this.speed = speed;
         this.maxDistance = maxDistance;
-        for (int i = 0, j = 0; i < 360/ degreesPerSegment; i++, j++)
+        for (int i = 0, j = 0; i < 360 / degreesPerSegment; i++, j++)
         {
 
             // Create a Node
-            PulseNode node = PulseNode.CreateNode(this, curAngle, distanceFromCenter, strength, maker, makerColor);
+            PulseNode node = PulseNode.CreateNode(this, curAngle, distanceFromCenter, strength);
 
             //Íncreasing this makes so the next node will have a diffrent position
             curAngle += degreesPerSegment;
@@ -54,7 +67,7 @@ public class Pulse : MonoBehaviour
                 node.SetNeighbours(left: previousNode); ;
                 previousNode.SetNeighbours(node);
             }
-            
+
             //Add it to the list for this pulse and then set the created one as the previous made node
             previousNode = node;
             listOfNodes.Add(node);
@@ -62,7 +75,7 @@ public class Pulse : MonoBehaviour
 
         // Connect the first node and the last made node.
         previousNode.SetNeighbours(firstNode);
-        firstNode.SetNeighbours(left:previousNode);
+        firstNode.SetNeighbours(left: previousNode);
 
         foreach (PulseNode item in listOfNodes)
         {
@@ -70,18 +83,25 @@ public class Pulse : MonoBehaviour
             item.CreateColliderLineBetweenNodes();
         }
         this.expand = expand;
+
+
+        if (DiscordLobbyService.INSTANCE.IsTheHost())
+        {
+            PulseData pulseData = new PulseData(speed, strength, maxDistance, userId, degreesPerSegment, distanceFromCenter, expand);
+            DiscordNetworkLayerService.INSTANCE.SendMessegeToAllOthers(NetworkChannel.SPAWN_PULSE, pulseData.ToBytes());
+        }
     }
 
     // Update is called once per frame
     void Update()
     {
         // Should the pulse Expand
-        if(expand)
+        if (expand)
         {
             distanceFromCenter += speed * Time.deltaTime;
         }
         // If the pulse is to big
-        if(distanceFromCenter > maxDistance)
+        if (distanceFromCenter > maxDistance)
         {
             expand = false;
             Destroy(gameObject);
@@ -97,7 +117,7 @@ public class Pulse : MonoBehaviour
                 }
             }
 
-            
+
             foreach (var item in listOfNodes)
             {
                 if (item)
@@ -108,5 +128,52 @@ public class Pulse : MonoBehaviour
             }
             previousDistanceFromCenter = distanceFromCenter;
         }
+    }
+}
+//Might not need this!
+public struct PulseData
+{
+    public long userId;
+    public float speed;
+    public float strength;
+    public float maxDistance;
+    public float distanceFromCenter;
+    public int degreesPerSegment;
+    public bool expand;
+
+    public PulseData (float speed, float strength, float maxDistance, long userId, int degreesPerSegment = 45, float distanceFromCenter = 1f, bool expand = true)
+    {
+        this.userId = userId;
+        this.speed = speed;
+        this.strength = strength;
+        this.maxDistance = maxDistance;
+        this.distanceFromCenter = distanceFromCenter;
+        this.degreesPerSegment = degreesPerSegment;
+        this.expand = expand;
+    }
+
+    public PulseData(byte[] data)
+    {
+        userId = BitConverter.ToInt64(data, 0);
+        speed = BitConverter.ToSingle(data, 8);
+        strength = BitConverter.ToSingle(data, 12);
+        maxDistance = BitConverter.ToSingle(data, 16);
+        distanceFromCenter = BitConverter.ToSingle(data, 20);
+        degreesPerSegment = BitConverter.ToInt32(data, 24);
+        expand = BitConverter.ToBoolean(data, 28);
+    }
+    public byte[] ToBytes()
+    {
+        List<byte> vs = new List<byte>();
+
+        vs.AddRange(BitConverter.GetBytes(userId));
+        vs.AddRange(BitConverter.GetBytes(speed));
+        vs.AddRange(BitConverter.GetBytes(strength));
+        vs.AddRange(BitConverter.GetBytes(maxDistance));
+        vs.AddRange(BitConverter.GetBytes(distanceFromCenter));
+        vs.AddRange(BitConverter.GetBytes(degreesPerSegment));
+        vs.AddRange(BitConverter.GetBytes(expand));
+
+        return vs.ToArray();
     }
 }

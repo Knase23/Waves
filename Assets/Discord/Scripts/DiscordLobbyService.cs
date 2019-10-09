@@ -268,7 +268,18 @@ public class DiscordLobbyService : MonoBehaviour
             return null;
         return lobbyManager.GetMemberUsers(CurrentLobbyId);
     }
+    public User GetUser(long userId)
+    {
+        foreach (var item in GetLobbyMembers())
+        {
+            if(item.Id == userId)
+            {
+                return item;
+            }
 
+        }
+        return new User();
+    }
 
     // Statements 
     public bool IsTheHost()

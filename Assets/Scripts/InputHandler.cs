@@ -5,7 +5,23 @@ using UnityEngine;
 
 public class InputHandler : MonoBehaviour
 {
-    public long userID;
+    [SerializeField]
+    private long userId;
+    public long UserId
+    {
+        get
+        {
+            return userId;
+        }
+        set
+        {
+            userId = value;
+            
+        }
+    }
+
+    public GameObject labelPrefab;
+    private ShipLabel label;
 
     [Tooltip("Uses Input.GetAxis")]
     public string VerticalAxis = "Vertical";
@@ -31,44 +47,49 @@ public class InputHandler : MonoBehaviour
     void Start()
     {
         shipControl = GetComponent<IPlayerShipControl>();
+        label = Instantiate(labelPrefab).GetComponent<ShipLabel>();
+        label.followTarget.target = transform;
+        label.UserId = userId;
     }
+    
     // Update is called once per frame
     void Update()
     {
-        if (!DiscordLobbyService.INSTANCE.IsTheHost() && userID == DiscordManager.CurrentUser.Id)
+        if (!DiscordLobbyService.INSTANCE.IsTheHost() && UserId == DiscordManager.CurrentUser.Id)
         {
-            InputData data = new InputData(Input.GetAxisRaw(HorizontalAxis), Input.GetAxisRaw(VerticalAxis), Input.GetButton(ActionOneButton), userID);
+            InputData data = new InputData(Input.GetAxisRaw(HorizontalAxis), Input.GetAxisRaw(VerticalAxis), Input.GetButtonDown(ActionOneButton), UserId);
             DiscordNetworkLayerService.INSTANCE.SendMessegeToOwnerOfLobby(NetworkChannel.INPUT_DATA, data.ToBytes());
             return;
         }
-        if (userID != DiscordManager.CurrentUser.Id)
+        if (UserId != DiscordManager.CurrentUser.Id)
         {
             return;
         }
 
         if (Input.GetButtonDown(ActionOneButton))
         {
-            shipControl.ActionOne(userID);
+            shipControl.ActionOne(UserId);
         }
 
-        shipControl.Move(Input.GetAxis(HorizontalAxis), Input.GetAxis(VerticalAxis), userID);
+        shipControl.Move(Input.GetAxis(HorizontalAxis), Input.GetAxis(VerticalAxis), UserId);
     }
     public void SetOwnerOfThisInputHandler(long userID)
     {
-        this.userID = userID;
+        this.UserId = userID;
+        label.UserId = userId;
     }
     public void ReciveInputData(InputData data)
     {
-        if (data.id != userID)
+        if (data.id != UserId)
         {
             return;
         }
 
         if (data.action1)
         {
-            shipControl.ActionOne(userID);
+            shipControl.ActionOne(UserId);
         }
-        shipControl.Move(data.x, data.y, userID);
+        shipControl.Move(data.x, data.y, UserId);
     }
 }
 public struct InputData

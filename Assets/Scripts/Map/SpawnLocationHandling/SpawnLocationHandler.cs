@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 [RequireComponent(typeof(LevelGenerator))]
@@ -24,20 +25,21 @@ public class SpawnLocationHandler : MonoBehaviour
         lobbyService.lobbyManager.OnMemberConnect += LobbyManager_OnMemberConnect;
         lobbyService.lobbyManager.OnMemberDisconnect += LobbyManager_OnMemberDisconnect;
         GameManager.OnJoinedLobby += SpawnInShipsForAllMembers;
+        
     }
 
     private void LobbyManager_OnMemberDisconnect(long lobbyId, long userId)
     {
         if (Debugging)
             Debug.Log("Lobby ID: " + lobbyId + "-  User ID: " + userId + " - Member Disconnected");
-        if(userToInput.ContainsKey(userId))
+        if (userToInput.ContainsKey(userId))
             userToInput[userId].gameObject.SetActive(false);
         //Disable the ship controlled by the user, if the user is not connected after a certain amount, we will destroy the ship and its data.         
     }
 
     private void LobbyManager_OnMemberConnect(long lobbyId, long userId)
     {
-        if(Debugging)
+        if (Debugging)
             Debug.Log("Lobby ID: " + lobbyId + "-  User ID: " + userId + " - Member Connected");
         //Only when we are in a Session. 
         // Check if the userId already have a ship in the session. 
@@ -63,9 +65,30 @@ public class SpawnLocationHandler : MonoBehaviour
 
         // Make sure the member have the right data
         // So all members have a ship, that can take in there TransformData
+        
 
         //byte[] data = new byte[10]; // Change to a struct of what we will send
         //discordNetworkLayerService.SendMessegeToOneUser(userId, NetworkChannel.CONTROLLER_SYNC, data); // Maybe a new NetworkChannel?
+    }
+    public void RequestForAllShipPositions()
+    {
+        if (!DiscordLobbyService.INSTANCE.IsTheHost())
+        {
+            Debug.Log("Request to for Positions for Ships");
+            SyncShipPositionRequest request = new SyncShipPositionRequest(DiscordManager.CurrentUser.Id);
+            DiscordNetworkLayerService.INSTANCE.SendMessegeToOwnerOfLobby(NetworkChannel.CONTROLLER_SYNC, request.ToBytes());
+        }
+    }
+    public static void RequestFromMemberOfShipPositions(long userId)
+    {
+        if (DiscordLobbyService.INSTANCE.IsTheHost())
+        {
+            foreach (var item in userToInput)
+            {
+                TransformData transformData = new TransformData(item.Value.transform.position, item.Value.transform.rotation, item.Key);
+                DiscordNetworkLayerService.INSTANCE.SendMessegeToOneUser(userId, NetworkChannel.SHIP_TRANSFORM, transformData.ToBytes());
+            }
+        }
     }
 
     public void SpawnInShipsForAllMembers()
@@ -82,7 +105,7 @@ public class SpawnLocationHandler : MonoBehaviour
         //Run for the current lobby
         //Spawn in a ship for each member on the determined spawn locations given from LevelGenerator
         IEnumerable<Discord.User> listOfUsers = lobbyService.GetLobbyMembers();
-        if(listOfUsers == null)
+        if (listOfUsers == null)
         {
             return;
         }
@@ -97,10 +120,11 @@ public class SpawnLocationHandler : MonoBehaviour
                 // Add the user to a waiting list, or try find a suitable spot to spawn the user in.
                 continue;
             }
-            
+
             SpawnInOneShipForUser(user.Id, position);
         }
 
+        Invoke("RequestForAllShipPositions", 0.5f);
     }
     private Vector3 GetAvailableSpawnPoint()
     {
@@ -136,16 +160,37 @@ public class SpawnLocationHandler : MonoBehaviour
         }
         GameObject obj = Instantiate(shipPrefab, position, Quaternion.identity);
         InputHandler inputHandler = obj.GetComponent<InputHandler>();
-        inputHandler.userID = userID;
+        inputHandler.UserId = userID;
         userToInput.Add(userID, inputHandler);
-        if(userID == DiscordManager.CurrentUser.Id)
+        if (userID == DiscordManager.CurrentUser.Id)
         {
             FindObjectOfType<UserData>().controller = inputHandler;
         }
-        if(lobbyService.IsTheHost())
+        if (lobbyService.IsTheHost())
         {
             //discordNetworkLayerService.SendMessegeToAllOthers(NetworkChannel.OBJECT_POSITION)
         }
         //Send A package that we have spawned in a Ship for User
+    }
+}
+public struct SyncShipPositionRequest
+{
+    public long id;
+    public SyncShipPositionRequest(long id)
+    {
+        this.id = id;
+
+    }
+    public SyncShipPositionRequest(byte[] data)
+    {
+        id = BitConverter.ToInt64(data, 0);
+
+    }
+    public byte[] ToBytes()
+    {
+        List<byte> vs = new List<byte>();
+        vs.AddRange(BitConverter.GetBytes(id));
+
+        return vs.ToArray();
     }
 }
