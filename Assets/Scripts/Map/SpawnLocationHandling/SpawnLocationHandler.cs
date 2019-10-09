@@ -75,8 +75,8 @@ public class SpawnLocationHandler : MonoBehaviour
         if (!DiscordLobbyService.INSTANCE.IsTheHost())
         {
             Debug.Log("Request to for Positions for Ships");
-            SyncShipPositionRequest request = new SyncShipPositionRequest(DiscordManager.CurrentUser.Id);
-            DiscordNetworkLayerService.INSTANCE.SendMessegeToOwnerOfLobby(NetworkChannel.CONTROLLER_SYNC, request.ToBytes());
+            ShipTransformRequest request = new ShipTransformRequest(DiscordManager.CurrentUser.Id);
+            DiscordNetworkLayerService.INSTANCE.SendMessegeToOwnerOfLobby(NetworkChannel.SHIPTRANSFORM_SYNC_REQUEST, request.ToBytes());
         }
     }
     public static void RequestFromMemberOfShipPositions(long userId)
@@ -173,15 +173,15 @@ public class SpawnLocationHandler : MonoBehaviour
         //Send A package that we have spawned in a Ship for User
     }
 }
-public struct SyncShipPositionRequest
+public struct ShipTransformRequest
 {
     public long id;
-    public SyncShipPositionRequest(long id)
+    public ShipTransformRequest(long id)
     {
         this.id = id;
 
     }
-    public SyncShipPositionRequest(byte[] data)
+    public ShipTransformRequest(byte[] data)
     {
         id = BitConverter.ToInt64(data, 0);
 

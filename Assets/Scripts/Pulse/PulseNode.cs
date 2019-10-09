@@ -22,13 +22,13 @@ public class PulseNode : MonoBehaviour
     /// </summary>
     public float strength;
 
-    public static PulseNode CreateNode(Pulse pulse, float curAngle, float distanceFromCenter, float strength)
+    public static PulseNode CreateNode(Pulse pulse, float curAngle, float distanceFromCenter, float strength, Transform makerOfPulse, Color makerColor )
     {
         GameObject gameObject = new GameObject("Node");
         gameObject.transform.parent = pulse.transform;
         PulseNode node = gameObject.AddComponent<PulseNode>();
         node.transform.localPosition = new Vector3(Mathf.Cos(Mathf.Deg2Rad * curAngle) * distanceFromCenter, 0, Mathf.Sin(Mathf.Deg2Rad * curAngle) * distanceFromCenter);
-        node.InitNode(gameObject, strength);
+        node.InitNode(gameObject, strength, makerOfPulse,makerColor);
         return node;
     }
 
@@ -36,14 +36,14 @@ public class PulseNode : MonoBehaviour
     {
         Statistics.instance.numberOfNodes++;
     }
-    public void InitNode(GameObject center, float strength)
+    public void InitNode(GameObject center, float strength, Transform makerOfPulse,Color color)
     {
         this.center = center;
         directionFromCenter = new Vector3(transform.localPosition.x, transform.localPosition.y, transform.localPosition.z);
         directionFromCenter.Normalize();
         this.strength = strength;
-        //this.makerOfPulse = makerOfPulse;
-        //this.makerColor = makerColor;
+        this.makerOfPulse = makerOfPulse;
+        this.makerColor = color;
     }
     public void CreateLineBetweenNodes()
     {
@@ -61,9 +61,9 @@ public class PulseNode : MonoBehaviour
         rigidBody.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
         rigidBody.isKinematic = true;
     }
-    private void OnTriggerEnter(Collider other)
+    private void OnCollisionEnter(Collision other)
     {
-        PulseNode nodeScript = other.GetComponent<PulseNode>();
+        PulseNode nodeScript = other.gameObject.GetComponent<PulseNode>();
         if (nodeScript != null && other.transform.parent != transform.parent)
         {
             if (nodeScript.makerOfPulse != makerOfPulse && !(strength <= 0 || nodeScript.strength <= 0))
@@ -71,6 +71,8 @@ public class PulseNode : MonoBehaviour
                 float tempStrength = strength;
                 strength -= nodeScript.strength;
                 nodeScript.strength -= tempStrength;
+
+                
                 if (nodeScript.strength <= 0)
                 {
                     nodeScript.gameObject.SetActive(false);
@@ -84,16 +86,34 @@ public class PulseNode : MonoBehaviour
         }
         else if (other.transform != makerOfPulse && nodeScript == null)
         {
-            IDamagable damagable = other.GetComponent<IDamagable>();
-            if (damagable != null)
+            //IDamagable damagable = other.GetComponent<IDamagable>();
+            IPushable  pushable = other.gameObject.GetComponent<IPushable>();
+            if(pushable != null)
             {
-                damagable.TakeDamage(strength);
+                if(other.contactCount > 0)
+                {
+                    Debug.Log(other.contactCount);
+                    ContactPoint point = other.GetContact(0);
+                    Vector3 dir = point.point - transform.position;
+                    pushable.PushAway(dir.normalized, strength);
+                    gameObject.SetActive(false);
+                }
+            }
+            if (other.gameObject.tag == "Asteriod" && !other.collider.isTrigger)
+            {
                 gameObject.SetActive(false);
             }
-            if(other.tag == "Asteriod" && !other.isTrigger)
-            {
-                gameObject.SetActive(false);
-            }
+
+            //if (damagable != null)
+            //{
+
+            //    damagable.TakeDamage(strength);
+            //    gameObject.SetActive(false);
+            //}
+            //if(other.tag == "Asteriod" && !other.isTrigger)
+            //{
+            //    gameObject.SetActive(false);
+            //}
         }
 
     }
@@ -126,7 +146,7 @@ public class PulseNode : MonoBehaviour
         //Make the gameobject into a node. 
         PulseNode newNodeScript = node.AddComponent<PulseNode>();
         // Sets all values to the correct values based on the Node that creates the new node.
-        newNodeScript.InitNode(center, strength);
+        newNodeScript.InitNode(center, strength,makerOfPulse,makerColor);
 
         //Add in the nodes neighbours. And change the 
         newNodeScript.SetNeighbours(right, this);

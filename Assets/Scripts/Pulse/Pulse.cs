@@ -13,29 +13,16 @@ public class Pulse : MonoBehaviour
     private float maxDistance = 10;
     private float previousDistanceFromCenter = 0;
 
-    public static void CreatePulse(float speed, float strength, float maxDistance, long userId)
+    public static void CreatePulse(float speed, float strength, float maxDistance, Transform maker,Color color)
     {
         GameObject gameObject = new GameObject("Pulse");
-        InputHandler inputHandler = SpawnLocationHandler.userToInput[userId];
-        gameObject.transform.position = inputHandler.transform.position;
-        gameObject.transform.parent = inputHandler.transform;
+        gameObject.transform.position = maker.position;
+        gameObject.transform.parent = maker;
         Pulse pulse = gameObject.AddComponent<Pulse>();
-        pulse.Init(speed, strength, maxDistance,inputHandler.UserId);
+        pulse.Init(speed, strength, maxDistance,maker,color);
     }
-    public static void CreatePulse(PulseData pulseData)
-    {
-        GameObject gameObject = new GameObject("Pulse");
-
-        InputHandler inputHandler = SpawnLocationHandler.userToInput[pulseData.userId];
-        gameObject.transform.position = inputHandler.transform.position;
-        gameObject.transform.parent = inputHandler.transform;
-
-        Pulse pulse = gameObject.AddComponent<Pulse>();
-        pulse.Init(pulseData.speed, pulseData.strength, pulseData.maxDistance, inputHandler.UserId);
-    }
-
     // Start is called before the first frame update
-    public void Init(float speed, float strength, float maxDistance, long userId, int degreesPerSegment = 45, float distanceFromCenter = 1f, bool expand = true)
+    public void Init(float speed, float strength, float maxDistance, Transform maker, Color color, int degreesPerSegment = 45, float distanceFromCenter = 1f, bool expand = true)
     {
         Statistics.instance.numberOfShips++;
         this.distanceFromCenter = distanceFromCenter;
@@ -49,7 +36,7 @@ public class Pulse : MonoBehaviour
         {
 
             // Create a Node
-            PulseNode node = PulseNode.CreateNode(this, curAngle, distanceFromCenter, strength);
+            PulseNode node = PulseNode.CreateNode(this, curAngle, distanceFromCenter, strength,maker,color);
 
             //Íncreasing this makes so the next node will have a diffrent position
             curAngle += degreesPerSegment;
@@ -83,13 +70,6 @@ public class Pulse : MonoBehaviour
             item.CreateColliderLineBetweenNodes();
         }
         this.expand = expand;
-
-
-        if (DiscordLobbyService.INSTANCE.IsTheHost())
-        {
-            PulseData pulseData = new PulseData(speed, strength, maxDistance, userId, degreesPerSegment, distanceFromCenter, expand);
-            DiscordNetworkLayerService.INSTANCE.SendMessegeToAllOthers(NetworkChannel.SPAWN_PULSE, pulseData.ToBytes());
-        }
     }
 
     // Update is called once per frame
@@ -128,52 +108,5 @@ public class Pulse : MonoBehaviour
             }
             previousDistanceFromCenter = distanceFromCenter;
         }
-    }
-}
-//Might not need this!
-public struct PulseData
-{
-    public long userId;
-    public float speed;
-    public float strength;
-    public float maxDistance;
-    public float distanceFromCenter;
-    public int degreesPerSegment;
-    public bool expand;
-
-    public PulseData (float speed, float strength, float maxDistance, long userId, int degreesPerSegment = 45, float distanceFromCenter = 1f, bool expand = true)
-    {
-        this.userId = userId;
-        this.speed = speed;
-        this.strength = strength;
-        this.maxDistance = maxDistance;
-        this.distanceFromCenter = distanceFromCenter;
-        this.degreesPerSegment = degreesPerSegment;
-        this.expand = expand;
-    }
-
-    public PulseData(byte[] data)
-    {
-        userId = BitConverter.ToInt64(data, 0);
-        speed = BitConverter.ToSingle(data, 8);
-        strength = BitConverter.ToSingle(data, 12);
-        maxDistance = BitConverter.ToSingle(data, 16);
-        distanceFromCenter = BitConverter.ToSingle(data, 20);
-        degreesPerSegment = BitConverter.ToInt32(data, 24);
-        expand = BitConverter.ToBoolean(data, 28);
-    }
-    public byte[] ToBytes()
-    {
-        List<byte> vs = new List<byte>();
-
-        vs.AddRange(BitConverter.GetBytes(userId));
-        vs.AddRange(BitConverter.GetBytes(speed));
-        vs.AddRange(BitConverter.GetBytes(strength));
-        vs.AddRange(BitConverter.GetBytes(maxDistance));
-        vs.AddRange(BitConverter.GetBytes(distanceFromCenter));
-        vs.AddRange(BitConverter.GetBytes(degreesPerSegment));
-        vs.AddRange(BitConverter.GetBytes(expand));
-
-        return vs.ToArray();
     }
 }

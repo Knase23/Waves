@@ -68,7 +68,7 @@ public class InputHandler : MonoBehaviour
 
         if (Input.GetButtonDown(ActionOneButton))
         {
-            shipControl.ActionOne(UserId);
+            shipControl.ActionOne(DiscordManager.CurrentUser.Id);
         }
 
         shipControl.Move(Input.GetAxis(HorizontalAxis), Input.GetAxis(VerticalAxis), UserId);
@@ -87,9 +87,23 @@ public class InputHandler : MonoBehaviour
 
         if (data.action1)
         {
-            shipControl.ActionOne(UserId);
+            shipControl.ActionOne(data.id);
+
+            DiscordNetworkLayerService.INSTANCE.SendMessegeToOwnerOfLobby(NetworkChannel.ACTION_TRIGGER, data.ToBytes());
         }
         shipControl.Move(data.x, data.y, UserId);
+    }
+
+    internal void ProcessTriggerActionPackage(TriggerActionPackage package)
+    {
+        switch (package.actionNumber)
+        {
+            case 0:
+                shipControl.ActionOne(package.userId);
+                break;
+            default:
+                break;
+        }
     }
 }
 public struct InputData
@@ -111,7 +125,7 @@ public struct InputData
         x = BitConverter.ToSingle(data, 0);
         y = BitConverter.ToSingle(data, 4);
         id = BitConverter.ToInt64(data, 8);
-        action1 = BitConverter.ToBoolean(data, 12);
+        action1 = BitConverter.ToBoolean(data, 16);
     }
     public byte[] ToBytes()
     {

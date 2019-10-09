@@ -4,32 +4,32 @@ public interface IPlayerShipControl
     /// <summary>
     /// Activets Action 1
     /// </summary>
-    void ActionOne(long UserId);
+    void ActionOne(long userId);
 
     /// <summary>
     /// Upgrades Action 1
     /// </summary>
-    void ActionOneUpgrade(long userId);
+    void ActionOneUpgrade();
 
     /// <summary>
     /// Activets Action 2
     /// </summary>
-    void ActionTwo(long userId);
+    void ActionTwo();
 
     /// <summary>
     /// Upgrades Action 1
     /// </summary>
-    void ActionTwoUpgrade(long userId);
+    void ActionTwoUpgrade();
 
     /// <summary>
     /// Activets Action 3
     /// </summary>
-    void ActionThree(long userId);
+    void ActionThree();
 
     /// <summary>
     /// Upgrades Action 1
     /// </summary>
-    void ActionThreeUpgrade(long userId);
+    void ActionThreeUpgrade();
 
     /// <summary>
     /// Used by the client side of;

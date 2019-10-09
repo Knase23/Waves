@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Ship : MonoBehaviour, IPlayerShipControl, IDamagable
+public class Ship : MonoBehaviour, IPlayerShipControl, IDamagable, IPushable
 {
     public float movmentSpeed = 10;
     public float rotationSpeed = 10;
@@ -95,9 +95,14 @@ public class Ship : MonoBehaviour, IPlayerShipControl, IDamagable
         if (actionOne == null)
             return;
 
-        actionOne.Execute(userId);
+        actionOne.Execute();
+        if(DiscordLobbyService.INSTANCE.IsTheHost())
+        {
+            TriggerActionPackage package = new TriggerActionPackage(userId, 0);
+            DiscordNetworkLayerService.INSTANCE.SendMessegeToAllOthers(NetworkChannel.ACTION_TRIGGER, package.ToBytes());
+        }
     }
-    public void ActionOneUpgrade(long userId)
+    public void ActionOneUpgrade()
     {
         if (actionOne == null)
             return;
@@ -106,14 +111,14 @@ public class Ship : MonoBehaviour, IPlayerShipControl, IDamagable
     #endregion
 
     #region Action 2
-    public void ActionTwo(long userId)
+    public void ActionTwo()
     {
         if (actionTwo == null)
             return;
 
-        actionTwo.Execute(userId);
+        actionTwo.Execute();
     }
-    public void ActionTwoUpgrade(long userId)
+    public void ActionTwoUpgrade()
     {
         if (actionTwo == null)
             return;
@@ -123,14 +128,14 @@ public class Ship : MonoBehaviour, IPlayerShipControl, IDamagable
     #endregion
 
     #region Action 3
-    public void ActionThree(long userId)
+    public void ActionThree()
     {
         if (actionThree == null)
             return;
 
-        actionThree.Execute(userId);
+        actionThree.Execute();
     }
-    public void ActionThreeUpgrade(long userId)
+    public void ActionThreeUpgrade()
     {
         if (actionThree == null)
             return;
@@ -171,6 +176,10 @@ public class Ship : MonoBehaviour, IPlayerShipControl, IDamagable
         gameObject.SetActive(false);
     }
     #endregion
+    public void PushAway(Vector3 directionToPush, float strength)
+    {
+        rb.AddForce(directionToPush * strength, ForceMode.Impulse);
+    }
 }
 
 public struct TransformData

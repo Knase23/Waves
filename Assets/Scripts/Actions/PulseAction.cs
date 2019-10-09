@@ -12,9 +12,9 @@ public class PulseAction : Action
         color = GetComponent<Ship>().shipColor;
     }
 
-    protected override void ActionExecute(long userId)
+    protected override void ActionExecute()
     {
-        Pulse.CreatePulse(speed, power, maxDistance, userId);
+        Pulse.CreatePulse(speed, power, maxDistance, transform,color);
     }
 
     public override void ApplyUpgrade(Ship ship, Upgrade upgrade)

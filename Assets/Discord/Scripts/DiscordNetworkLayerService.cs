@@ -53,7 +53,7 @@ public class DiscordNetworkLayerService : MonoBehaviour
         switch (channel)
         {
             case NetworkChannel.INPUT_DATA:
-                //If the data is from a client
+                // If the data is from a client
                 // Do stuff with it.
                 InputData iData = new InputData(data);
                 if(DebugOnMessege)
@@ -69,13 +69,13 @@ public class DiscordNetworkLayerService : MonoBehaviour
                 }
                 break;
             case NetworkChannel.LOADSCENE:
-                // if the data is from a host
+                // If the data is from a host
                 // LoadScene and wait for map to be generated.
+
                 break;
             case NetworkChannel.SHIP_TRANSFORM:
-                //If the data is from the host
-                // update the position of that object
-
+                // If the data is from the host
+                // Update the position of those ships position object
                 TransformData transformData = new TransformData(data);
                 if (DebugOnMessege)
                     Debug.Log("Got Transform Data for: " + transformData.id);
@@ -89,10 +89,10 @@ public class DiscordNetworkLayerService : MonoBehaviour
                 }
 
                 break;
-            case NetworkChannel.CONTROLLER_SYNC:
+            case NetworkChannel.SHIPTRANSFORM_SYNC_REQUEST:
                 // If the data is from a client
                 // Send data to it
-                SyncShipPositionRequest request = new SyncShipPositionRequest(data);
+                ShipTransformRequest request = new ShipTransformRequest(data);
                 SpawnLocationHandler.RequestFromMemberOfShipPositions(request.id);
                 
 
@@ -101,12 +101,18 @@ public class DiscordNetworkLayerService : MonoBehaviour
                 //If the data is from the host
                 // Make the score display the right numbers for each player.
                 break;
-            case NetworkChannel.SPAWN_PULSE:
+
+            case NetworkChannel.SPAWN_IN_OBJECT:
                 //If the data is from the host
                 // Make the score display the right numbers for each player.
-                PulseData pulseData = new PulseData(data);
-                Pulse.CreatePulse(pulseData);
 
+
+                break;
+            case NetworkChannel.ACTION_TRIGGER:
+                //If the data is from the host
+                // Activate the action of that inputHandler for that user that wanted to do that action.
+                TriggerActionPackage package = new TriggerActionPackage(data);
+                SpawnLocationHandler.userToInput[package.userId].ProcessTriggerActionPackage(package);
                 break;
             default:
                 Debug.Log(peerId + " : Sent messege was not reognized");
@@ -147,10 +153,10 @@ public class DiscordNetworkLayerService : MonoBehaviour
         manager.OpenPeer(peer_id, route);
         manager.OpenChannel(peer_id, (byte)NetworkChannel.INPUT_DATA, false);
         manager.OpenChannel(peer_id, (byte)NetworkChannel.LOADSCENE, true);
-        manager.OpenChannel(peer_id, (byte)NetworkChannel.CONTROLLER_SYNC, true);
+        manager.OpenChannel(peer_id, (byte)NetworkChannel.SHIPTRANSFORM_SYNC_REQUEST, true);
         manager.OpenChannel(peer_id, (byte)NetworkChannel.SCORE_SYNC, true);
         manager.OpenChannel(peer_id, (byte)NetworkChannel.SHIP_TRANSFORM, false);
-        manager.OpenChannel(peer_id, (byte)NetworkChannel.SPAWN_PULSE, true);
+        manager.OpenChannel(peer_id, (byte)NetworkChannel.ACTION_TRIGGER, true);
 
         if (!othersUserPeerIds.Contains(peer_id))
         {
@@ -159,12 +165,12 @@ public class DiscordNetworkLayerService : MonoBehaviour
         }
         Debug.Log("Connection with: " + member);
     }
-   
+    #region Code That is a must, and is working as far as i know
     private void LateUpdate()
     {
         manager.Flush();
     }
-
+    
     private void OnRouteUpdate(string routeData)
     {
         myRoute = routeData;
@@ -276,6 +282,9 @@ public class DiscordNetworkLayerService : MonoBehaviour
             memberIdToPeerId.Remove(member);
         }
     }
+    #endregion
+
+
 }
 /// <summary>
 /// Describes what kind of data is going through channel
@@ -298,14 +307,23 @@ public enum NetworkChannel
     SHIP_TRANSFORM,
     
     /// <summary>
-    /// Syncing so the player is controlling the correct ship it is controlling  
+    /// A Request for the host to Send out all Ships Transforms to the clients  
     /// </summary>
-    CONTROLLER_SYNC,
+    SHIPTRANSFORM_SYNC_REQUEST,
+    
     /// <summary>
     /// Syncing so the score is displayed right
     /// </summary>
     SCORE_SYNC,
 
-    SPAWN_PULSE
+    /// <summary>
+    /// Host Spawned in a object, client spawn exactly the samething!!!
+    /// </summary>
+    SPAWN_IN_OBJECT,
+    
+    /// <summary>
+    /// When the host executes a action, the client will get whom used a action
+    /// </summary>
+    ACTION_TRIGGER
 
 }

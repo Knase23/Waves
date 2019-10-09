@@ -10,16 +10,16 @@ public abstract class Action : MonoBehaviour
 
     private float timer;
 
-    public void Execute(long userId)
+    public void Execute()
     {
         if(timer <= 0)
         {
-            ActionExecute(userId);
+            ActionExecute();
             timer = cooldownTime;
         }
     }
 
-    protected abstract void ActionExecute(long userId);
+    protected abstract void ActionExecute();
     public void Update()
     {
         timer -= Time.deltaTime;
@@ -29,4 +29,28 @@ public abstract class Action : MonoBehaviour
     {
         ship.StoreUpgrade(null);
     }
+}
+public struct TriggerActionPackage
+{
+    public long userId;
+    public int actionNumber;
+    public TriggerActionPackage(long userId,int actionNumber)
+    {
+        this.userId = userId;
+        this.actionNumber = actionNumber;
+    }
+    public TriggerActionPackage(byte[] data)
+    {
+        userId = BitConverter.ToInt64(data,0);
+        actionNumber = BitConverter.ToInt32(data, 8);
+    }
+    public byte[] ToBytes()
+    {
+        List<byte> vs = new List<byte>();
+
+        vs.AddRange(BitConverter.GetBytes(userId));
+        vs.AddRange(BitConverter.GetBytes(actionNumber));
+        return vs.ToArray();
+    }
+
 }
