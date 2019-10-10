@@ -1,13 +1,13 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using UnityEditor;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using System;
 
 public class LevelGenerator : MonoBehaviour
 {
     public bool GenerateOnStart = true;
-
+    
     public Transform mapTransform;
     public Transform spawnPointTransform;
     public Vector3 maxPosition = new Vector3(100, 0, 100);
@@ -38,7 +38,20 @@ public class LevelGenerator : MonoBehaviour
     SpawnLocationHandler spawnHandler;
     private void Start()
     {
-        GenerateLevel();
+        if(GenerateOnStart && SceneManager.GetActiveScene().name == "StartMenu")
+            GenerateLevel();
+
+        if(SceneManager.GetActiveScene().name == "GameScene" && DiscordLobbyService.INSTANCE.IsTheHost())
+        {
+            //GenerateLevel();
+            //Start a function that waits until every LobbyMember have completed loading.
+        }
+        else
+        {
+            //ClearLevel();
+            //Start a function that waits until every LobbyMember have completed loading.
+        }
+
     }
     /// <summary>
     /// Generates a map of astiods with the given prefabs
@@ -56,16 +69,20 @@ public class LevelGenerator : MonoBehaviour
         totalOfConfirmedObjects = 0;
 
         //List of all created Objects, used later for Networking
-        List<GameObject> allGeneratedObjects = new List<GameObject>();        
-        
+        List<GameObject> allGeneratedObjects = new List<GameObject>();
+
         //Spawn in Large Asteriods with there placement rules. within setup area.
-        allGeneratedObjects.AddRange(Sampling.SampleGenerating(numberOfLargeWanted, largeAstroidPrefabs.GetComponent<Asteriod>().placementRules, largeAstroidPrefabs, maxPosition, minPosition, largeTransform, numberOfRejections: maxNumberOfFailedPlacements));
-        
+        List<GameObject> largeAsteriodsCreated = Sampling.SampleGenerating(numberOfLargeWanted, largeAstroidPrefabs.GetComponent<Asteriod>().placementRules, largeAstroidPrefabs, maxPosition, minPosition, largeTransform, numberOfRejections: maxNumberOfFailedPlacements);
+        allGeneratedObjects.AddRange(largeAsteriodsCreated);
+
         //Spawn in Medium Asteriods with there placement rules. within setup area.
-        allGeneratedObjects.AddRange(Sampling.SampleGenerating(numberOfMediumWanted, mediumAstroidPrefabs.GetComponent<Asteriod>().placementRules, mediumAstroidPrefabs, maxPosition, minPosition, mediumTransform, numberOfRejections: maxNumberOfFailedPlacements));
-        
+        List<GameObject> mediumAsteriodsCreated = Sampling.SampleGenerating(numberOfMediumWanted, mediumAstroidPrefabs.GetComponent<Asteriod>().placementRules, mediumAstroidPrefabs, maxPosition, minPosition, mediumTransform, numberOfRejections: maxNumberOfFailedPlacements);
+        allGeneratedObjects.AddRange(mediumAsteriodsCreated);
+
         //Spawn in Small Asteriods with there placement rules. within setup area.
-        allGeneratedObjects.AddRange(Sampling.SampleGenerating(numberOfSmallWanted, smallAstroidPrefabs.GetComponent<Asteriod>().placementRules, smallAstroidPrefabs, maxPosition, minPosition, smallTransform, numberOfRejections: maxNumberOfFailedPlacements));
+        List<GameObject> smallAsteriodsCreated = Sampling.SampleGenerating(numberOfSmallWanted, smallAstroidPrefabs.GetComponent<Asteriod>().placementRules, smallAstroidPrefabs, maxPosition, minPosition, smallTransform, numberOfRejections: maxNumberOfFailedPlacements);
+        allGeneratedObjects.AddRange(smallAsteriodsCreated);
+
         totalOfConfirmedObjects = allGeneratedObjects.Count;
 
         // Done with Obsticles in level
@@ -83,7 +100,12 @@ public class LevelGenerator : MonoBehaviour
         // Generate Pick Up spawn positions
 
         // Done with all level Setups
-        
+
+        if (DiscordLobbyService.INSTANCE.IsTheHost())
+        {
+            LevelDetailsPackage levelDetailsPackage = new LevelDetailsPackage(largeAsteriodsCreated.Count,mediumAsteriodsCreated.Count,smallAsteriodsCreated.Count,spawnpoints.Count);
+            DiscordNetworkLayerService.INSTANCE.SendMessegeToAllOthers(NetworkChannel.START_LOADING_MAP, levelDetailsPackage.ToBytes());
+        }
         // Send a Network Package to all Clients, this must be Relaiable, We need to have identical maps.
         /*
          * Network Code Stuff
@@ -91,6 +113,18 @@ public class LevelGenerator : MonoBehaviour
          */
     }
 
+    IEnumerable SendLevel()
+    {
+        //Make sure we get a respond from everyone that they are ready to recive the data
+
+        //Start Sending LargeAsteriodsCreated
+        //Start Sending MediumAsteriodsCreated
+        //Start Sending SmallAsteriodsCreated
+        //Start Sending SpawnPointsCreated
+
+        //Wait for messeges of everyone completed
+        yield break;
+    }
     /// <summary>
     /// Clears all astriods inside the Astriod list. AKA makes the map empty
     /// </summary>
@@ -127,7 +161,40 @@ public class LevelGenerator : MonoBehaviour
         {
             AddGameObjectWithTagFormTransform(tag, transform.GetChild(i), ref gameObjects);
         }
+    }   
+}
+public struct LevelDetailsPackage
+{
+    public int numberOfLarge;
+    public int numberOfMedium;
+    public int numberOfSmall;
+    public int numberOfSpawnPoints;
+
+    public LevelDetailsPackage(int large, int medium,int small,int spawnPoint)
+    {
+        numberOfLarge = large;
+        numberOfMedium = medium;
+        numberOfSmall = small;
+        numberOfSpawnPoints = spawnPoint;
+    }
+    public LevelDetailsPackage(byte[] data)
+    {
+        numberOfLarge = BitConverter.ToInt32(data,0);
+        numberOfMedium = BitConverter.ToInt32(data, 4);
+        numberOfSmall = BitConverter.ToInt32(data, 8);
+        numberOfSpawnPoints = BitConverter.ToInt32(data, 12);
+    }
+    public byte[] ToBytes()
+    {
+        List<byte> vs = new List<byte>();
+
+        vs.AddRange(BitConverter.GetBytes(numberOfLarge));
+        vs.AddRange(BitConverter.GetBytes(numberOfMedium));
+        vs.AddRange(BitConverter.GetBytes(numberOfSmall));
+        vs.AddRange(BitConverter.GetBytes(numberOfSpawnPoints));
+
+        return vs.ToArray();
+        
     }
 
-    
 }

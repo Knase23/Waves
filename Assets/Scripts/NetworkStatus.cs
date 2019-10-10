@@ -11,6 +11,16 @@ public class NetworkStatus : MonoBehaviour
         text = GetComponent<TextMeshProUGUI>();
         GameManager.OnJoinedLobby += OnOnline;
         GameManager.OnDisconnectLobby += OnOffline;
+
+        if(GameManager.Instance.gameState == GameManager.GameState.IN_LOBBY)
+        {
+            OnOnline();
+        }
+        else if (GameManager.Instance.gameState == GameManager.GameState.NOT_IN_LOBBY)
+        {
+            OnOffline();
+        }
+
     }
     private void OnOnline()
     {

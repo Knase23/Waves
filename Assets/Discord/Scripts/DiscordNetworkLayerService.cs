@@ -114,6 +114,13 @@ public class DiscordNetworkLayerService : MonoBehaviour
                 TriggerActionPackage package = new TriggerActionPackage(data);
                 SpawnLocationHandler.userToInput[package.userId].ProcessTriggerActionPackage(package);
                 break;
+            case NetworkChannel.START_LOADING_MAP:
+                //If the data is from the host
+                // Make the score display the right numbers for each player.
+                LevelDetailsPackage levelDetailsPackage = new LevelDetailsPackage(data);
+                //Setup Loading screen for level
+
+                break;
             default:
                 Debug.Log(peerId + " : Sent messege was not reognized");
                 break;
@@ -145,7 +152,7 @@ public class DiscordNetworkLayerService : MonoBehaviour
         DiscordLobbyService.INSTANCE.SetMyMetaData("peer_id", myPeerId.ToString());
         DiscordLobbyService.INSTANCE.SetMyMetaData("route", myRoute);
 
-        LobbyManager lobbyManager = DiscordLobbyService.INSTANCE.lobbyManager;
+        LobbyManager lobbyManager = DiscordManager.INSTANCE.GetDiscord().GetLobbyManager();
         ulong peer_id = ulong.Parse(lobbyManager.GetMemberMetadataValue(lobbyId, member, "peer_id"));
         string route = lobbyManager.GetMemberMetadataValue(lobbyId, member, "route");
         #endregion
@@ -157,6 +164,7 @@ public class DiscordNetworkLayerService : MonoBehaviour
         manager.OpenChannel(peer_id, (byte)NetworkChannel.SCORE_SYNC, true);
         manager.OpenChannel(peer_id, (byte)NetworkChannel.SHIP_TRANSFORM, false);
         manager.OpenChannel(peer_id, (byte)NetworkChannel.ACTION_TRIGGER, true);
+        manager.OpenChannel(peer_id, (byte)NetworkChannel.START_LOADING_MAP, true);
 
         if (!othersUserPeerIds.Contains(peer_id))
         {
@@ -252,7 +260,7 @@ public class DiscordNetworkLayerService : MonoBehaviour
         }
         try
         {
-            LobbyManager lobbyManager = DiscordLobbyService.INSTANCE.lobbyManager;
+            LobbyManager lobbyManager = DiscordManager.INSTANCE.GetDiscord().GetLobbyManager(); 
             ulong peer_id = ulong.Parse(lobbyManager.GetMemberMetadataValue(lobbyId, member, "peer_id"));
             string route = lobbyManager.GetMemberMetadataValue(lobbyId, member, "route");
 
@@ -324,6 +332,21 @@ public enum NetworkChannel
     /// <summary>
     /// When the host executes a action, the client will get whom used a action
     /// </summary>
-    ACTION_TRIGGER
+    ACTION_TRIGGER,
+
+    /// <summary>
+    /// A Package that gives the clients the expected amount of objects to spawn in
+    /// </summary>
+    START_LOADING_MAP,
+    /// <summary>
+    /// A Package gives the Host a clear ahead for that user to start playing
+    /// </summary>
+    USER_DONE_LOADING_MAP,
+    /// <summary>
+    /// A Package from the Host to start the game Session for the users. AKA they see there ship and can start moving.
+    /// </summary>
+    START_GAME,
+
+        
 
 }

@@ -22,10 +22,10 @@ public class SpawnLocationHandler : MonoBehaviour
         discordNetworkLayerService = GetComponent<DiscordNetworkLayerService>();
         level = GetComponent<LevelGenerator>();
         lobbyService = DiscordLobbyService.INSTANCE;
-        lobbyService.lobbyManager.OnMemberConnect += LobbyManager_OnMemberConnect;
-        lobbyService.lobbyManager.OnMemberDisconnect += LobbyManager_OnMemberDisconnect;
+        lobbyService.OnMemberConnect += LobbyManager_OnMemberConnect;
+        lobbyService.OnMemberDisconnect += LobbyManager_OnMemberDisconnect;
         GameManager.OnJoinedLobby += SpawnInShipsForAllMembers;
-        
+        SpawnInShipsForAllMembers();
     }
 
     private void LobbyManager_OnMemberDisconnect(long lobbyId, long userId)

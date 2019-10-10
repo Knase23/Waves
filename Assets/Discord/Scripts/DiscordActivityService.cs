@@ -135,7 +135,7 @@ public class DiscordActivityService : MonoBehaviour
         DiscordLobbyService ls = DiscordLobbyService.INSTANCE;
 
         Lobby lob = ls.GetLobby();
-        if (DiscordLobbyService.IsOnline && !lob.Locked)
+        if (DiscordLobbyService.IsOnline && !lob.Locked && ls.GetMemberCount() != 0)
         {
             activity.Party = new ActivityParty()
             {

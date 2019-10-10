@@ -13,7 +13,7 @@ public class DiscordLobbyService : MonoBehaviour
     public bool DebugOnMessege = false;
     //Add delegates so we can change other items when something happens when something happens
 
-    public LobbyManager lobbyManager;
+    private LobbyManager lobbyManager;
     public UserManager userManager;
 
     [SerializeField]
@@ -64,19 +64,59 @@ public class DiscordLobbyService : MonoBehaviour
         }
     }
 
+    //public delegate void MemberDisconnect(long lobbyId);
+    public event LobbyManager.LobbyUpdateHandler OnLobbyUpdate;
+
+    public event LobbyManager.LobbyDeleteHandler OnLobbyDelete;
+
+    public event LobbyManager.MemberConnectHandler OnMemberConnect;
+
+    public event LobbyManager.MemberUpdateHandler OnMemberUpdate;
+
+    public event LobbyManager.MemberDisconnectHandler OnMemberDisconnect;
+
+    public event LobbyManager.LobbyMessageHandler OnLobbyMessage;
+
+    public event LobbyManager.SpeakingHandler OnSpeaking;
+
+    public event LobbyManager.NetworkMessageHandler OnNetworkMessage;
     // Start is called before the first frame update
     void Start()
     {
         lobbyManager = DiscordManager.INSTANCE.GetDiscord().GetLobbyManager();
         userManager = DiscordManager.INSTANCE.GetDiscord().GetUserManager();
-        lobbyManager.OnLobbyUpdate += OnLobbyUpdate;
+        lobbyManager.OnLobbyUpdate += LobbyUpdate;
         lobbyManager.OnLobbyUpdate += DiscordActivityService.INSTANCE.OnLobbyUpdate;
-        lobbyManager.OnMemberConnect += OnMemberConnect;
-        lobbyManager.OnMemberUpdate += OnMemberUpdate;
-        lobbyManager.OnMemberDisconnect += OnMemberDisconnect;
+        lobbyManager.OnMemberConnect += MemberConnect;
+        lobbyManager.OnMemberUpdate += MemberUpdate;
+        lobbyManager.OnMemberDisconnect += MemberDisconnect;
+        lobbyManager.OnNetworkMessage += NetworkMessage;
+        lobbyManager.OnSpeaking += LobbyManager_OnSpeaking;
+        lobbyManager.OnLobbyMessage += LobbyManager_OnLobbyMessage;
+        lobbyManager.OnLobbyDelete += LobbyManager_OnLobbyDelete;
     }
 
-    private void OnMemberConnect(long lobbyId, long userId)
+    private void LobbyManager_OnLobbyDelete(long lobbyId, uint reason)
+    {
+        OnLobbyDelete?.Invoke(lobbyId, reason); 
+    }
+
+    private void LobbyManager_OnLobbyMessage(long lobbyId, long userId, byte[] data)
+    {
+        OnLobbyMessage?.Invoke(lobbyId, userId, data);
+    }
+
+    private void LobbyManager_OnSpeaking(long lobbyId, long userId, bool speaking)
+    {
+        OnSpeaking?.Invoke(lobbyId, userId, speaking);
+    }
+
+    private void NetworkMessage(long lobbyId, long userId, byte channelId, byte[] data)
+    {
+        OnNetworkMessage?.Invoke(lobbyId, userId, channelId, data);
+    }
+
+    private void MemberConnect(long lobbyId, long userId)
     {
         if(DebugOnMessege)
             Debug.Log("MemberConnected "+ userId);
@@ -87,8 +127,9 @@ public class DiscordLobbyService : MonoBehaviour
                 Debug.Log("Try doing EstablishConnectionWithMember " + userId);
             DiscordNetworkLayerService.INSTANCE.EstablishConnectionWithMember(lobbyId, userId);
         }
+        OnMemberConnect?.Invoke(lobbyId,userId);
     }
-    private void OnMemberUpdate(long lobbyId, long userId)
+    private void MemberUpdate(long lobbyId, long userId)
     {
         //Debug.Log("MemberUpdate " + userId);
         if (userId != DiscordManager.CurrentUser.Id && lobbyManager.MemberMetadataCount(lobbyId, userId) >= 2)
@@ -97,8 +138,9 @@ public class DiscordLobbyService : MonoBehaviour
                 Debug.Log("Try doing EstablishConnectionWithMember " + userId);
             DiscordNetworkLayerService.INSTANCE.UpdateAPeer(lobbyId, userId);
         }
+        OnMemberUpdate?.Invoke(lobbyId, userId);
     }
-    private void OnMemberDisconnect(long lobbyId, long userId)
+    private void MemberDisconnect(long lobbyId, long userId)
     {
         if (DebugOnMessege)
             Debug.Log("MemberDisconnect " + userId);
@@ -110,6 +152,7 @@ public class DiscordLobbyService : MonoBehaviour
             //Give hosting to someone else and join them
             DisconnectLobby();
         }
+        OnMemberDisconnect?.Invoke(lobbyId, userId);
     }
 
     private void Update()
@@ -137,13 +180,15 @@ public class DiscordLobbyService : MonoBehaviour
             }
         }
     }
-    private void OnLobbyUpdate(long lobbyId)
+    private void LobbyUpdate(long lobbyId)
     {
         foreach (var member in GetLobbyMembers())
         {
             if (member.Id != DiscordManager.CurrentUser.Id && lobbyManager.MemberMetadataCount(lobbyId, member.Id) >= 2)
                 DiscordNetworkLayerService.INSTANCE.EstablishConnectionWithMember(lobbyId, member.Id);
         }
+
+        OnLobbyUpdate(lobbyId);
     }
     // Functions to Use to Call from other scripts
     public void CreateLobby()
@@ -250,22 +295,23 @@ public class DiscordLobbyService : MonoBehaviour
 
     public Lobby GetLobby()
     {
-        if (lobbyManager == null || !IsOnline)
+        if (lobbyManager == null || !IsOnline || CurrentLobbyId == 0)
             return new Lobby();
 
         return lobbyManager.GetLobby(CurrentLobbyId);
     }
     public int GetMemberCount()
     {
-        if (lobbyManager == null)
+        if (lobbyManager == null || CurrentLobbyId == 0)
             return 0;
 
         return lobbyManager.MemberCount(CurrentLobbyId);
     }
     public IEnumerable<User> GetLobbyMembers()
     {
-        if (!IsOnline)
+        if (!IsOnline || CurrentLobbyId == 0)
             return null;
+
         return lobbyManager.GetMemberUsers(CurrentLobbyId);
     }
     public User GetUser(long userId)

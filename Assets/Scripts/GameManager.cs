@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -9,13 +10,13 @@ public class GameManager : MonoBehaviour
     public delegate void DisconnectedLobby();
     public static event JoinedLobby OnJoinedLobby;
     public static event DisconnectedLobby OnDisconnectLobby;
-
+    public GameState gameState = GameState.NOT_IN_LOBBY;
 
     private void Awake()
     {
         if (Instance)
         {
-            Destroy(this);
+            Destroy(gameObject);
         }
         else
         {
@@ -31,19 +32,41 @@ public class GameManager : MonoBehaviour
     {
         lobbyService = GetComponent<DiscordLobbyService>();
         spawnLocationHandler = FindObjectOfType<SpawnLocationHandler>();
+        OnDisconnectLobby += GameManager_OnDisconnectLobby;
+        OnJoinedLobby += GameManager_OnJoinedLobby;
+    }
+
+    private void GameManager_OnJoinedLobby()
+    {
+        gameState = GameState.IN_LOBBY;
+    }
+
+    private void GameManager_OnDisconnectLobby()
+    {
+        gameState = GameState.NOT_IN_LOBBY;
     }
 
     public static void CheckOnline()
     {
         if (DiscordLobbyService.IsOnline)
         {
-            OnJoinedLobby();
+            OnJoinedLobby(); 
         }
         else
         {
             OnDisconnectLobby();
         }
 
+    }
+    public void LoadGameScene()
+    {
+        if(DiscordLobbyService.INSTANCE.IsTheHost())
+        {
+            //Send Message to load scene for clients
+            //LoadScenePackage loadScenePackage = new LoadScenePackage(sceneIndex);
+            //DiscordNetworkLayerService.INSTANCE.SendMessegeToAllOthers(NetworkChannel.LOADSCENE,loadScenePackage.ToBytes());
+        }
+        SceneManager.LoadScene("GameScene");
     }
     // Update is called once per frame
     void Update()
@@ -52,8 +75,16 @@ public class GameManager : MonoBehaviour
         {
             lobbyService.CreateLobby();
             UserData userData = FindObjectOfType<UserData>();
-
             userData.id = DiscordManager.CurrentUser.Id;
         }
+    }
+    public enum GameState
+    {
+        NOT_IN_LOBBY,
+        IN_LOBBY,
+        LOADING_MAP,
+        DONE_LOADING_MAP,
+        GAME_IN_SESSION,
+        GAME_END
     }
 }
