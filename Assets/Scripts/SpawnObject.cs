@@ -36,30 +36,30 @@ public class SpawnObject : MonoBehaviour
             case ItemSpawned.LargeAsteriod:
 
                 generator.SpawnInLevelObject(LevelGenerator.LevelObject.LargeAsteriod, data.position, data.rotation);
-                load.progressOfLevelDetail.numberOfLarge++;
+                load.IncreaseProgress(LevelGenerator.LevelObject.LargeAsteriod);
                 break;
             case ItemSpawned.MediumAsteriod:
                 generator.SpawnInLevelObject(LevelGenerator.LevelObject.MediumAsteriod, data.position, data.rotation);
-                load.progressOfLevelDetail.numberOfMedium++;
+                load.IncreaseProgress(LevelGenerator.LevelObject.MediumAsteriod);
                 break;
             case ItemSpawned.SmallAsteriod:
                 generator.SpawnInLevelObject(LevelGenerator.LevelObject.SmallAsteriod, data.position, data.rotation);
-                load.progressOfLevelDetail.numberOfSmall++;
+                load.IncreaseProgress(LevelGenerator.LevelObject.SmallAsteriod);
                 break;
-            case ItemSpawned.SpawnPoints:
+            case ItemSpawned.SpawnPoint:
                 generator.SpawnInLevelObject(LevelGenerator.LevelObject.SpawnPoint, data.position, data.rotation);
-                load.progressOfLevelDetail.numberOfSpawnPoints++;
+                load.IncreaseProgress(LevelGenerator.LevelObject.SpawnPoint);
                 break;
             default:
                 Debug.Log("Not Vaild object to spawn");
                 break;
         }
     }
-    enum ItemSpawned
+    public enum ItemSpawned
     {
         LargeAsteriod,
         MediumAsteriod,
         SmallAsteriod,
-        SpawnPoints,
+        SpawnPoint,
     }
 }

@@ -25,7 +25,7 @@ public class SpawnLocationHandler : MonoBehaviour
         lobbyService.OnMemberConnect += LobbyManager_OnMemberConnect;
         lobbyService.OnMemberDisconnect += LobbyManager_OnMemberDisconnect;
         GameManager.OnJoinedLobby += SpawnInShipsForAllMembers;
-        SpawnInShipsForAllMembers();
+        //SpawnInShipsForAllMembers();
     }
 
     private void LobbyManager_OnMemberDisconnect(long lobbyId, long userId)
@@ -105,25 +105,30 @@ public class SpawnLocationHandler : MonoBehaviour
         //Run for the current lobby
         //Spawn in a ship for each member on the determined spawn locations given from LevelGenerator
         IEnumerable<Discord.User> listOfUsers = lobbyService.GetLobbyMembers();
-        if (listOfUsers == null)
+        if (listOfUsers != null)
         {
-            return;
+            foreach (var user in listOfUsers)
+            {
+                Vector3 position = GetAvailableSpawnPoint();
+                //Choose a spawnLocation
+
+                if (position == Vector3.down)
+                {
+                    // Add the user to a waiting list, or try find a suitable spot to spawn the user in.
+                    continue;
+                }
+
+                SpawnInOneShipForUser(user.Id, position);
+            }
         }
 
-        foreach (var user in listOfUsers)
+        if(!DiscordLobbyService.IsOnline)
         {
             Vector3 position = GetAvailableSpawnPoint();
-            //Choose a spawnLocation
-
-            if (position == Vector3.down)
-            {
-                // Add the user to a waiting list, or try find a suitable spot to spawn the user in.
-                continue;
-            }
-
-            SpawnInOneShipForUser(user.Id, position);
+            SpawnInOneShipForUser(DiscordManager.CurrentUser.Id, position);
         }
 
+        GameManager.Instance.gameState = GameManager.GameState.GAME_IN_SESSION;
         Invoke("RequestForAllShipPositions", 0.5f);
     }
     private Vector3 GetAvailableSpawnPoint()

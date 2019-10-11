@@ -35,34 +35,78 @@ public class LevelGenerator : MonoBehaviour
     public List<GameObject> spawnpoints = new List<GameObject>();
     SpawnLocationHandler spawnHandler;
 
-    List<GameObject> largeAsteriodsCreated;
-    List<GameObject> mediumAsteriodsCreated;
-    List<GameObject> smallAsteriodsCreated;
+    List<GameObject> largeAsteriodsCreated = new List<GameObject>();
+    List<GameObject> mediumAsteriodsCreated = new List<GameObject>();
+    List<GameObject> smallAsteriodsCreated = new List<GameObject>();
     private void Start()
     {
-        if(GenerateOnStart && SceneManager.GetActiveScene().name == "StartMenu")
+        if (GenerateOnStart && SceneManager.GetActiveScene().name == "StartMenu")
+        {
             GenerateLevel();
-
+            return;
+        }
         if(SceneManager.GetActiveScene().name == "GameScene" && DiscordLobbyService.INSTANCE.IsTheHost())
         {
-            //GenerateLevel();
+            GenerateLevel();
+            LoadGameIn loadGameIn = FindObjectOfType<LoadGameIn>();
+            LevelDetailsPackage levelDetailsPackage = new LevelDetailsPackage(largeAsteriodsCreated.Count, mediumAsteriodsCreated.Count, smallAsteriodsCreated.Count, spawnpoints.Count);
             //Start a function that waits until every LobbyMember have completed loading.
-            if (DiscordLobbyService.INSTANCE.IsTheHost())
+            if (DiscordLobbyService.IsOnline && DiscordLobbyService.INSTANCE.IsTheHost())
             {
-                LevelDetailsPackage levelDetailsPackage = new LevelDetailsPackage(largeAsteriodsCreated.Count, mediumAsteriodsCreated.Count, smallAsteriodsCreated.Count, spawnpoints.Count);
                 DiscordNetworkLayerService.INSTANCE.SendMessegeToAllOthers(NetworkChannel.START_LOADING_MAP, levelDetailsPackage.ToBytes());
             }
+            loadGameIn.GetMapDetails(levelDetailsPackage);
             //Start Corutine for sending all asteriods
-
-
+            StartCoroutine(SendingLevelDataToClients(loadGameIn));
         }
         else
         {
+            spawnHandler = GetComponent<SpawnLocationHandler>();
             ClearLevel();
             //Start a function that waits until every LobbyMember have completed loading.
         }
 
     }
+
+    IEnumerator SendingLevelDataToClients(LoadGameIn loadGameIn)
+    {
+        yield return new WaitForSecondsRealtime(1f);
+        foreach (var largeAsteriod in largeAsteriodsCreated)
+        {
+            TransformDataPackage transformDataPackage = new TransformDataPackage(largeAsteriod.transform.position, largeAsteriod.transform.rotation, (long)SpawnObject.ItemSpawned.LargeAsteriod);
+            if (DiscordLobbyService.IsOnline && DiscordLobbyService.INSTANCE.IsTheHost())
+                DiscordNetworkLayerService.INSTANCE.SendMessegeToAllOthers(NetworkChannel.SPAWN_IN_OBJECT, transformDataPackage.ToBytes());
+            loadGameIn.IncreaseProgress(LevelObject.LargeAsteriod);
+            yield return null;
+        }
+        foreach (var mediumAsteriod in mediumAsteriodsCreated)
+        {
+            TransformDataPackage transformDataPackage = new TransformDataPackage(mediumAsteriod.transform.position, mediumAsteriod.transform.rotation, (long)SpawnObject.ItemSpawned.MediumAsteriod);
+            if (DiscordLobbyService.IsOnline && DiscordLobbyService.INSTANCE.IsTheHost())
+                DiscordNetworkLayerService.INSTANCE.SendMessegeToAllOthers(NetworkChannel.SPAWN_IN_OBJECT, transformDataPackage.ToBytes());
+            loadGameIn.IncreaseProgress(LevelObject.MediumAsteriod);
+            yield return null;
+        }
+        foreach (var smallAsteriod in smallAsteriodsCreated)
+        {
+            TransformDataPackage transformDataPackage = new TransformDataPackage(smallAsteriod.transform.position, smallAsteriod.transform.rotation, (long)SpawnObject.ItemSpawned.SmallAsteriod);
+            if (DiscordLobbyService.IsOnline && DiscordLobbyService.INSTANCE.IsTheHost())
+                DiscordNetworkLayerService.INSTANCE.SendMessegeToAllOthers(NetworkChannel.SPAWN_IN_OBJECT, transformDataPackage.ToBytes());
+            loadGameIn.IncreaseProgress(LevelObject.SmallAsteriod);
+            yield return null;
+        }
+        foreach (var spawn in spawnpoints)
+        {
+            TransformDataPackage transformDataPackage = new TransformDataPackage(spawn.transform.position, spawn.transform.rotation, (long)SpawnObject.ItemSpawned.SpawnPoint);
+            if (DiscordLobbyService.IsOnline && DiscordLobbyService.INSTANCE.IsTheHost())
+                DiscordNetworkLayerService.INSTANCE.SendMessegeToAllOthers(NetworkChannel.SPAWN_IN_OBJECT, transformDataPackage.ToBytes());
+            loadGameIn.IncreaseProgress(LevelObject.SpawnPoint);
+            yield return null;
+        }
+
+        yield break;
+    }
+
     /// <summary>
     /// Generates a map of astiods with the given prefabs
     /// </summary>
@@ -80,17 +124,14 @@ public class LevelGenerator : MonoBehaviour
 
         //List of all created Objects, used later for Networking
         List<GameObject> allGeneratedObjects = new List<GameObject>();
-        largeAsteriodsCreated.Clear();
         //Spawn in Large Asteriods with there placement rules. within setup area.
         largeAsteriodsCreated = Sampling.SampleGenerating(numberOfLargeWanted, largeAstroidPrefabs.GetComponent<Asteriod>().placementRules, largeAstroidPrefabs, maxPosition, minPosition, largeTransform, numberOfRejections: maxNumberOfFailedPlacements);
         allGeneratedObjects.AddRange(largeAsteriodsCreated);
-        mediumAsteriodsCreated.Clear();
         //Spawn in Medium Asteriods with there placement rules. within setup area.
         mediumAsteriodsCreated = Sampling.SampleGenerating(numberOfMediumWanted, mediumAstroidPrefabs.GetComponent<Asteriod>().placementRules, mediumAstroidPrefabs, maxPosition, minPosition, mediumTransform, numberOfRejections: maxNumberOfFailedPlacements);
         allGeneratedObjects.AddRange(mediumAsteriodsCreated);
 
         //Spawn in Small Asteriods with there placement rules. within setup area.
-        smallAsteriodsCreated.Clear();
         smallAsteriodsCreated = Sampling.SampleGenerating(numberOfSmallWanted, smallAstroidPrefabs.GetComponent<Asteriod>().placementRules, smallAstroidPrefabs, maxPosition, minPosition, smallTransform, numberOfRejections: maxNumberOfFailedPlacements);
         allGeneratedObjects.AddRange(smallAsteriodsCreated);
 
@@ -105,7 +146,6 @@ public class LevelGenerator : MonoBehaviour
         }
         if (GetComponent<SpawnLocationHandler>().enabled)
         {
-            spawnpoints.Clear();
             spawnpoints.AddRange(Sampling.SampleGenerating(numberOfSpawnPoints, spawnHandler.placementRules, spawnHandler.spawnPointPrefab, maxPosition, minPosition, spawnPointTransform));
         }
         // Generate Pick Up spawn positions
@@ -121,7 +161,7 @@ public class LevelGenerator : MonoBehaviour
                 mediumAsteriodsCreated.Add(Instantiate(mediumAstroidPrefabs, position, rotation, mediumTransform));
                 return true;
             case LevelObject.SmallAsteriod:
-                smallAsteriodsCreated.Add(Instantiate(mediumAstroidPrefabs, position, rotation, smallTransform));
+                smallAsteriodsCreated.Add(Instantiate(smallAstroidPrefabs, position, rotation, smallTransform));
                 return true;
             case LevelObject.SpawnPoint:
                 spawnpoints.Add(Instantiate(spawnHandler.spawnPointPrefab, position, rotation, spawnPointTransform));
@@ -136,6 +176,10 @@ public class LevelGenerator : MonoBehaviour
     /// </summary>
     public void ClearLevel()
     {
+        largeAsteriodsCreated.Clear();
+        mediumAsteriodsCreated.Clear();
+        smallAsteriodsCreated.Clear(); 
+        spawnpoints.Clear();
         List<GameObject> allChilds = GetAstriodsFromTransform(mapTransform);
         foreach (var child in allChilds)
         {
@@ -177,12 +221,13 @@ public class LevelGenerator : MonoBehaviour
     }
 
 }
+[Serializable]
 public struct LevelDetailsPackage
 {
-    public int numberOfLarge;
-    public int numberOfMedium;
-    public int numberOfSmall;
-    public int numberOfSpawnPoints;
+    [SerializeField] public int numberOfLarge;
+    [SerializeField] public int numberOfMedium;
+    [SerializeField] public int numberOfSmall;
+    [SerializeField] public int numberOfSpawnPoints;
 
     public LevelDetailsPackage(int large, int medium,int small,int spawnPoint)
     {

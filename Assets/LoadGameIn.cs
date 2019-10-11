@@ -1,13 +1,18 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
 
 public class LoadGameIn : MonoBehaviour
 {
-    bool allReady = false;
     LevelGenerator generator;
-    LevelDetailsPackage levelDetails;
+    public LevelDetailsPackage levelDetails;
     List<long> usersThatAreReady = new List<long>();
+
+    public Canvas canvas;
+    public Slider progressBar;
+    public TextMeshProUGUI progressText;
 
     public LevelDetailsPackage progressOfLevelDetail;
     public float progress;
@@ -16,6 +21,10 @@ public class LoadGameIn : MonoBehaviour
     private void Start()
     {
         generator = FindObjectOfType<LevelGenerator>();
+    }
+    private void Update()
+    {
+        ShowProgress();
     }
 
     public void GetMapDetails(LevelDetailsPackage package)
@@ -26,15 +35,51 @@ public class LoadGameIn : MonoBehaviour
 
     public void ShowProgress()
     {
-        float maxProgress = levelDetails.numberOfLarge + levelDetails.numberOfMedium + levelDetails.numberOfSmall + levelDetails.numberOfSpawnPoints;
+        float maxProgress = 4;
 
-        progress = (progressOfLevelDetail.numberOfLarge + progressOfLevelDetail.numberOfMedium + progressOfLevelDetail.numberOfSmall + progressOfLevelDetail.numberOfSpawnPoints)/maxProgress;
+        float largeAsteriodProgress = progressOfLevelDetail.numberOfLarge / (float)levelDetails.numberOfLarge;
+        float mediumAsteriodProgress = progressOfLevelDetail.numberOfMedium / (float)levelDetails.numberOfMedium;
+        float smallAsteriodProgress = progressOfLevelDetail.numberOfSmall / (float)levelDetails.numberOfSmall;
+        float spawmProgress = progressOfLevelDetail.numberOfSpawnPoints / (float)levelDetails.numberOfSpawnPoints;
 
+        progress = (largeAsteriodProgress + mediumAsteriodProgress + smallAsteriodProgress + spawmProgress) / maxProgress;
 
+        progressBar.maxValue = 1;
+        progressBar.value = progress;
 
-        if(progress >= 1)
+        if (progress >= 1)
         {
-            allReady = true;
+            //SpawnInShips
+            SpawnLocationHandler spawnLocation = FindObjectOfType<SpawnLocationHandler>();
+
+            spawnLocation.SpawnInShipsForAllMembers();
+            canvas.gameObject.SetActive(false);
+            enabled = false;
+        }
+    }
+
+    public void IncreaseProgress(LevelGenerator.LevelObject levelObject)
+    {
+        switch (levelObject)
+        {
+            case LevelGenerator.LevelObject.LargeAsteriod:
+                progressOfLevelDetail.numberOfLarge++;
+                progressText.text = "Spawning in Large Asteriods";
+                break;
+            case LevelGenerator.LevelObject.MediumAsteriod:
+                progressOfLevelDetail.numberOfMedium++;
+                progressText.text = "Spawning in Medium Asteriods";
+                break;
+            case LevelGenerator.LevelObject.SmallAsteriod:
+                progressOfLevelDetail.numberOfSmall++;
+                progressText.text = "Spawning in Small Asteriods";
+                break;
+            case LevelGenerator.LevelObject.SpawnPoint:
+                progressOfLevelDetail.numberOfSpawnPoints++;
+                progressText.text = "Spawning in Spawnpoints";
+                break;
+            default:
+                break;
         }
     }
 

@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -63,10 +64,14 @@ public class GameManager : MonoBehaviour
         if(DiscordLobbyService.INSTANCE.IsTheHost())
         {
             //Send Message to load scene for clients
-            //LoadScenePackage loadScenePackage = new LoadScenePackage(sceneIndex);
-            //DiscordNetworkLayerService.INSTANCE.SendMessegeToAllOthers(NetworkChannel.LOADSCENE,loadScenePackage.ToBytes());
+            LoadScenePackage loadScenePackage = new LoadScenePackage(1);
+            DiscordNetworkLayerService.INSTANCE.SendMessegeToAllOthers(NetworkChannel.LOADSCENE,loadScenePackage.ToBytes());
         }
-        SceneManager.LoadScene("GameScene");
+        SceneManager.LoadScene(1);
+    }
+    public void LoadScene(LoadScenePackage package)
+    {
+        SceneManager.LoadScene(package.index);
     }
     // Update is called once per frame
     void Update()
@@ -86,5 +91,24 @@ public class GameManager : MonoBehaviour
         DONE_LOADING_MAP,
         GAME_IN_SESSION,
         GAME_END
+    }
+}
+
+public struct LoadScenePackage
+{
+    public int index;
+    public LoadScenePackage(int index)
+    {
+        this.index = index; 
+    }
+    public LoadScenePackage(byte[] data)
+    {
+        this.index = BitConverter.ToInt32(data,0);
+    }
+    public byte[] ToBytes()
+    {
+        List<byte> vs = new List<byte>();
+        vs.AddRange(BitConverter.GetBytes(index));
+        return vs.ToArray();
     }
 }

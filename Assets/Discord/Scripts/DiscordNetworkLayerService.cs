@@ -71,7 +71,8 @@ public class DiscordNetworkLayerService : MonoBehaviour
             case NetworkChannel.LOADSCENE:
                 // If the data is from a host
                 // LoadScene and wait for map to be generated.
-
+                LoadScenePackage loadScenePackage = new LoadScenePackage(data);
+                GameManager.Instance.LoadScene(loadScenePackage);
                 break;
             case NetworkChannel.SHIP_TRANSFORM:
                 // If the data is from the host
@@ -104,6 +105,7 @@ public class DiscordNetworkLayerService : MonoBehaviour
             case NetworkChannel.SPAWN_IN_OBJECT:
                 //If the data is from the host
                 // Make the score display the right numbers for each player.
+                Debug.Log("Spawn in Object");
                 TransformDataPackage transformPackage = new TransformDataPackage(data);
                 SpawnObject.INSTANCE.SpawnInObject(transformPackage);
 
@@ -117,6 +119,7 @@ public class DiscordNetworkLayerService : MonoBehaviour
             case NetworkChannel.START_LOADING_MAP:
                 //If the data is from the host
                 // Make the score display the right numbers for each player.
+                Debug.Log("Got Start Loading_Map");
                 LevelDetailsPackage levelDetailsPackage = new LevelDetailsPackage(data);
                 LoadGameIn loadGameIn = FindObjectOfType<LoadGameIn>();
                 loadGameIn.GetMapDetails(levelDetailsPackage);
