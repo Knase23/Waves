@@ -76,7 +76,7 @@ public class DiscordNetworkLayerService : MonoBehaviour
             case NetworkChannel.SHIP_TRANSFORM:
                 // If the data is from the host
                 // Update the position of those ships position object
-                TransformData transformData = new TransformData(data);
+                TransformDataPackage transformData = new TransformDataPackage(data);
                 if (DebugOnMessege)
                     Debug.Log("Got Transform Data for: " + transformData.id);
                 if (SpawnLocationHandler.userToInput.ContainsKey(transformData.id))
@@ -94,7 +94,6 @@ public class DiscordNetworkLayerService : MonoBehaviour
                 // Send data to it
                 ShipTransformRequest request = new ShipTransformRequest(data);
                 SpawnLocationHandler.RequestFromMemberOfShipPositions(request.id);
-                
 
                 break;
             case NetworkChannel.SCORE_SYNC:
@@ -105,19 +104,23 @@ public class DiscordNetworkLayerService : MonoBehaviour
             case NetworkChannel.SPAWN_IN_OBJECT:
                 //If the data is from the host
                 // Make the score display the right numbers for each player.
-
+                TransformDataPackage transformPackage = new TransformDataPackage(data);
+                SpawnObject.INSTANCE.SpawnInObject(transformPackage);
 
                 break;
             case NetworkChannel.ACTION_TRIGGER:
                 //If the data is from the host
                 // Activate the action of that inputHandler for that user that wanted to do that action.
-                TriggerActionPackage package = new TriggerActionPackage(data);
-                SpawnLocationHandler.userToInput[package.userId].ProcessTriggerActionPackage(package);
+                TriggerActionPackage actionPackage = new TriggerActionPackage(data);
+                SpawnLocationHandler.userToInput[actionPackage.userId].ProcessTriggerActionPackage(actionPackage);
                 break;
             case NetworkChannel.START_LOADING_MAP:
                 //If the data is from the host
                 // Make the score display the right numbers for each player.
                 LevelDetailsPackage levelDetailsPackage = new LevelDetailsPackage(data);
+                LoadGameIn loadGameIn = FindObjectOfType<LoadGameIn>();
+                loadGameIn.GetMapDetails(levelDetailsPackage);
+
                 //Setup Loading screen for level
 
                 break;
@@ -165,6 +168,7 @@ public class DiscordNetworkLayerService : MonoBehaviour
         manager.OpenChannel(peer_id, (byte)NetworkChannel.SHIP_TRANSFORM, false);
         manager.OpenChannel(peer_id, (byte)NetworkChannel.ACTION_TRIGGER, true);
         manager.OpenChannel(peer_id, (byte)NetworkChannel.START_LOADING_MAP, true);
+        manager.OpenChannel(peer_id, (byte)NetworkChannel.SPAWN_IN_OBJECT, true);
 
         if (!othersUserPeerIds.Contains(peer_id))
         {

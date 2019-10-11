@@ -5,15 +5,61 @@ using UnityEngine;
 
 public class SpawnObject : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
+
+    public static SpawnObject INSTANCE;
+    public List<GameObject> listOfPrefabsToSpawnIn = new List<GameObject>();
+    LevelGenerator generator;
+    LoadGameIn load;
+
+    private void Awake()
     {
-        
+        if(INSTANCE)
+        {
+            Destroy(this);
+        }
+        else
+        {
+            INSTANCE = this;
+        }
     }
 
-    // Update is called once per frame
-    void Update()
+    private void Start()
     {
-        
+        generator = FindObjectOfType<LevelGenerator>();
+        load = FindObjectOfType<LoadGameIn>();
+    }
+
+    public void SpawnInObject(TransformDataPackage data)
+    {
+        switch ((ItemSpawned)data.id)
+        {
+            case ItemSpawned.LargeAsteriod:
+
+                generator.SpawnInLevelObject(LevelGenerator.LevelObject.LargeAsteriod, data.position, data.rotation);
+                load.progressOfLevelDetail.numberOfLarge++;
+                break;
+            case ItemSpawned.MediumAsteriod:
+                generator.SpawnInLevelObject(LevelGenerator.LevelObject.MediumAsteriod, data.position, data.rotation);
+                load.progressOfLevelDetail.numberOfMedium++;
+                break;
+            case ItemSpawned.SmallAsteriod:
+                generator.SpawnInLevelObject(LevelGenerator.LevelObject.SmallAsteriod, data.position, data.rotation);
+                load.progressOfLevelDetail.numberOfSmall++;
+                break;
+            case ItemSpawned.SpawnPoints:
+                generator.SpawnInLevelObject(LevelGenerator.LevelObject.SpawnPoint, data.position, data.rotation);
+                load.progressOfLevelDetail.numberOfSpawnPoints++;
+                break;
+            default:
+                Debug.Log("Not Vaild object to spawn");
+                break;
+        }
+    }
+    enum ItemSpawned
+    {
+        LargeAsteriod,
+        MediumAsteriod,
+        SmallAsteriod,
+        SpawnPoints,
     }
 }

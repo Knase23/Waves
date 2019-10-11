@@ -42,7 +42,7 @@ public interface IPlayerShipControl
     /// Used by Networking
     /// </summary>
     /// <param name="position"></param>
-    void ChangeTransform(TransformData transformData);
+    void ChangeTransform(TransformDataPackage transformData);
 
 
 }

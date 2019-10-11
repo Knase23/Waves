@@ -59,7 +59,7 @@ public class Ship : MonoBehaviour, IPlayerShipControl, IDamagable, IPushable
 
         if (DiscordLobbyService.INSTANCE.IsTheHost())
         {
-            TransformData movementData = new TransformData(transform.position, transform.rotation, userId);
+            TransformDataPackage movementData = new TransformDataPackage(transform.position, transform.rotation, userId);
             if (latestTransformUpdate != movementData)
             {
                 latestTransformUpdate = movementData;
@@ -143,7 +143,7 @@ public class Ship : MonoBehaviour, IPlayerShipControl, IDamagable, IPushable
         actionThree.ApplyUpgrade(this, storedUpgrade);
     }
     #endregion
-    TransformData latestTransformUpdate;
+    TransformDataPackage latestTransformUpdate;
     #region Movement
     public void Move(float horizontal, float vertical, long userId)
     {
@@ -153,7 +153,7 @@ public class Ship : MonoBehaviour, IPlayerShipControl, IDamagable, IPushable
     }
 
     
-    public void ChangeTransform(TransformData transformData)
+    public void ChangeTransform(TransformDataPackage transformData)
     {
         transform.position = transformData.position;
         transform.rotation = transformData.rotation;
@@ -182,19 +182,19 @@ public class Ship : MonoBehaviour, IPlayerShipControl, IDamagable, IPushable
     }
 }
 
-public struct TransformData
+public struct TransformDataPackage
 {
     public Vector3 position;
     public Quaternion rotation;
     public long id;
-    public TransformData(Vector3 position,Quaternion rotation ,long id)
+    public TransformDataPackage(Vector3 position,Quaternion rotation ,long id)
     {
         this.position = position;
         this.rotation = rotation;
         this.id = id;
         
     }
-    public TransformData(byte[] data)
+    public TransformDataPackage(byte[] data)
     {
         position.x = BitConverter.ToSingle(data, 0);
         position.y = BitConverter.ToSingle(data, 4);
@@ -224,12 +224,12 @@ public struct TransformData
 
     public override bool Equals(object obj)
     {
-        if (!(obj is TransformData))
+        if (!(obj is TransformDataPackage))
         {
             return false;
         }
 
-        var data = (TransformData)obj;
+        var data = (TransformDataPackage)obj;
         return data == this;
     }
 
@@ -242,11 +242,11 @@ public struct TransformData
         return hashCode;
     }
 
-    public static bool operator ==(TransformData left, TransformData right)
+    public static bool operator ==(TransformDataPackage left, TransformDataPackage right)
     {
         return left.id == right.id && left.position == right.position && left.rotation == right.rotation;
     }
-    public static bool operator !=(TransformData left, TransformData right)
+    public static bool operator !=(TransformDataPackage left, TransformDataPackage right)
     {
         return left.id != right.id || left.position != right.position || left.rotation != right.rotation;
     }

@@ -52,5 +52,4 @@ public struct TriggerActionPackage
         vs.AddRange(BitConverter.GetBytes(actionNumber));
         return vs.ToArray();
     }
-
 }

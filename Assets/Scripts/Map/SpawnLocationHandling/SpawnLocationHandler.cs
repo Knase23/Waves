@@ -85,7 +85,7 @@ public class SpawnLocationHandler : MonoBehaviour
         {
             foreach (var item in userToInput)
             {
-                TransformData transformData = new TransformData(item.Value.transform.position, item.Value.transform.rotation, item.Key);
+                TransformDataPackage transformData = new TransformDataPackage(item.Value.transform.position, item.Value.transform.rotation, item.Key);
                 DiscordNetworkLayerService.INSTANCE.SendMessegeToOneUser(userId, NetworkChannel.SHIP_TRANSFORM, transformData.ToBytes());
             }
         }

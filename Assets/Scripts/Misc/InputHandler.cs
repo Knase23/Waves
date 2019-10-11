@@ -55,27 +55,31 @@ public class InputHandler : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (!DiscordLobbyService.INSTANCE.IsTheHost() && UserId == DiscordManager.CurrentUser.Id)
+        if (GameManager.Instance.gameState == GameManager.GameState.GAME_IN_SESSION)
         {
-            InputData data = new InputData(Input.GetAxisRaw(HorizontalAxis), Input.GetAxisRaw(VerticalAxis), Input.GetButtonDown(ActionOneButton), UserId);
-            DiscordNetworkLayerService.INSTANCE.SendMessegeToOwnerOfLobby(NetworkChannel.INPUT_DATA, data.ToBytes());
-            return;
-        }
-        if (UserId != DiscordManager.CurrentUser.Id)
-        {
-            return;
+            if (!DiscordLobbyService.INSTANCE.IsTheHost() && UserId == DiscordManager.CurrentUser.Id)
+            {
+                InputData data = new InputData(Input.GetAxisRaw(HorizontalAxis), Input.GetAxisRaw(VerticalAxis), Input.GetButtonDown(ActionOneButton), UserId);
+                DiscordNetworkLayerService.INSTANCE.SendMessegeToOwnerOfLobby(NetworkChannel.INPUT_DATA, data.ToBytes());
+                return;
+            }
+            if (UserId != DiscordManager.CurrentUser.Id)
+            {
+                return;
+            }
+
+            if (Input.GetButtonDown(ActionOneButton))
+            {
+                shipControl.ActionOne(DiscordManager.CurrentUser.Id);
+            }
+
+            shipControl.Move(Input.GetAxis(HorizontalAxis), Input.GetAxis(VerticalAxis), UserId);
         }
 
-        if (Input.GetButtonDown(ActionOneButton))
-        {
-            shipControl.ActionOne(DiscordManager.CurrentUser.Id);
-        }
-
-        shipControl.Move(Input.GetAxis(HorizontalAxis), Input.GetAxis(VerticalAxis), UserId);
     }
     public void SetOwnerOfThisInputHandler(long userID)
     {
-        this.UserId = userID;
+        UserId = userID;
         label.UserId = userId;
     }
     public void ReciveInputData(InputData data)
