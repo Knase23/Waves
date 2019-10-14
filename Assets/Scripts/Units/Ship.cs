@@ -43,6 +43,7 @@ public class Ship : MonoBehaviour, IPlayerShipControl, IDamagable, IPushable
     private float vertical;
     private float horizontal;
 
+    public bool vulnerable;
 
     private void Start()
     {
@@ -55,7 +56,7 @@ public class Ship : MonoBehaviour, IPlayerShipControl, IDamagable, IPushable
         Vector3 increment = vertical * transform.forward * Time.deltaTime * movmentSpeed;
         rb.velocity += increment;
         transform.Rotate(horizontal * Vector3.up * rotationSpeed * Time.deltaTime);
-        transform.rotation = Quaternion.Euler(0, transform.rotation.eulerAngles.y, 0);
+        //transform.rotation = Quaternion.Euler(0, transform.rotation.eulerAngles.y, 0);
 
         if (DiscordLobbyService.INSTANCE.IsTheHost())
         {
@@ -172,13 +173,33 @@ public class Ship : MonoBehaviour, IPlayerShipControl, IDamagable, IPushable
     #region Health Delegate Functions
     public void OnDeath()
     {
-        Debug.Log(gameObject.name + " - You Dead!");
+        Debug.Log(gameObject.name + " - You diead!");
+        SpawnLocationHandler.INSTANCE.Respawn(this);
+        hp.ResetHealth();
         gameObject.SetActive(false);
+        //Spawn on new position after a set amount of miliseconds/seconds
+        //Send Messege to SpawnLocationHandler to relocate object
     }
     #endregion
     public void PushAway(Vector3 directionToPush, float strength)
     {
         rb.AddForce(directionToPush * strength, ForceMode.Impulse);
+        vulnerable = true;
+        Invoke("ResetVulnerable", 2);
+    }
+
+    public void ResetVulnerable()
+    {
+        vulnerable = false;
+    }
+    public void OnCollisionEnter(Collision collision)
+    {
+        if(vulnerable && collision.collider.tag == "Asteriod" && collision.relativeVelocity.sqrMagnitude > 60 )
+        {
+            Debug.Log("Hit a Asteriod while Vulnerable, Relative Velocity sqr Magnitude: " + collision.relativeVelocity.sqrMagnitude, gameObject);
+            hp.TakeDamage(1);
+            //Maybe the one that made me vulnerable should get points
+        }
     }
 }
 

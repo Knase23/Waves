@@ -31,6 +31,7 @@ public class LevelGenerator : MonoBehaviour
     public int numberOfSmallWanted = 50;
     public int numberOfSpawnPoints = 10;
     [Header("Debugging")]
+    public bool debuging;
     public int totalOfConfirmedObjects = 0;
     public List<GameObject> spawnpoints = new List<GameObject>();
     SpawnLocationHandler spawnHandler;
@@ -70,14 +71,16 @@ public class LevelGenerator : MonoBehaviour
 
     IEnumerator SendingLevelDataToClients(LoadGameIn loadGameIn)
     {
-        yield return new WaitForSecondsRealtime(1f);
+        yield return new WaitForSecondsRealtime(2f);
+
         foreach (var largeAsteriod in largeAsteriodsCreated)
         {
             TransformDataPackage transformDataPackage = new TransformDataPackage(largeAsteriod.transform.position, largeAsteriod.transform.rotation, (long)SpawnObject.ItemSpawned.LargeAsteriod);
             if (DiscordLobbyService.IsOnline && DiscordLobbyService.INSTANCE.IsTheHost())
                 DiscordNetworkLayerService.INSTANCE.SendMessegeToAllOthers(NetworkChannel.SPAWN_IN_OBJECT, transformDataPackage.ToBytes());
             loadGameIn.IncreaseProgress(LevelObject.LargeAsteriod);
-            yield return null;
+            if (!debuging)
+                yield return null;
         }
         foreach (var mediumAsteriod in mediumAsteriodsCreated)
         {
@@ -85,7 +88,8 @@ public class LevelGenerator : MonoBehaviour
             if (DiscordLobbyService.IsOnline && DiscordLobbyService.INSTANCE.IsTheHost())
                 DiscordNetworkLayerService.INSTANCE.SendMessegeToAllOthers(NetworkChannel.SPAWN_IN_OBJECT, transformDataPackage.ToBytes());
             loadGameIn.IncreaseProgress(LevelObject.MediumAsteriod);
-            yield return null;
+            if (!debuging)
+                yield return null;
         }
         foreach (var smallAsteriod in smallAsteriodsCreated)
         {
@@ -93,7 +97,8 @@ public class LevelGenerator : MonoBehaviour
             if (DiscordLobbyService.IsOnline && DiscordLobbyService.INSTANCE.IsTheHost())
                 DiscordNetworkLayerService.INSTANCE.SendMessegeToAllOthers(NetworkChannel.SPAWN_IN_OBJECT, transformDataPackage.ToBytes());
             loadGameIn.IncreaseProgress(LevelObject.SmallAsteriod);
-            yield return null;
+            if (!debuging)
+                yield return null;
         }
         foreach (var spawn in spawnpoints)
         {
@@ -101,7 +106,8 @@ public class LevelGenerator : MonoBehaviour
             if (DiscordLobbyService.IsOnline && DiscordLobbyService.INSTANCE.IsTheHost())
                 DiscordNetworkLayerService.INSTANCE.SendMessegeToAllOthers(NetworkChannel.SPAWN_IN_OBJECT, transformDataPackage.ToBytes());
             loadGameIn.IncreaseProgress(LevelObject.SpawnPoint);
-            yield return null;
+            if (!debuging)
+                yield return null;
         }
 
         yield break;

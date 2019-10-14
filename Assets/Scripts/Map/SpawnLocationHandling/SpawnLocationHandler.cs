@@ -5,6 +5,8 @@ using UnityEngine;
 [RequireComponent(typeof(LevelGenerator))]
 public class SpawnLocationHandler : MonoBehaviour
 {
+
+    public static SpawnLocationHandler INSTANCE;
     public GameObject shipPrefab;
     public GameObject spawnPointPrefab;
     public Sample placementRules;
@@ -15,7 +17,17 @@ public class SpawnLocationHandler : MonoBehaviour
     LevelGenerator level;
 
     public bool Debugging = false;
-
+    private void Awake()
+    {
+        if(INSTANCE)
+        {
+            Destroy(this);
+        }
+        else
+        {
+            INSTANCE = this;
+        }
+    }
     // Start is called before the first frame update
     void Start()
     {
@@ -134,15 +146,18 @@ public class SpawnLocationHandler : MonoBehaviour
     private Vector3 GetAvailableSpawnPoint()
     {
         //Check a spawn point if its available
-        for (int i = 0; i < level.spawnpoints.Count; i++)
+        Vector3 foundPosition = Vector3.down;
+        int numberOfTries = 0;
+        do
         {
-            if (!IsAShipNearSpawnPoint(level.spawnpoints[i].transform.position))
+            int spawnPointIndex = UnityEngine.Random.Range(0, level.spawnpoints.Count);
+            if (!IsAShipNearSpawnPoint(level.spawnpoints[spawnPointIndex].transform.position))
             {
-                return level.spawnpoints[i].transform.position;
+                foundPosition = level.spawnpoints[spawnPointIndex].transform.position;
             }
-        }
+        } while (foundPosition == Vector3.down && numberOfTries >= level.spawnpoints.Count);
 
-        return Vector3.down;
+        return foundPosition;
     }
     private bool IsAShipNearSpawnPoint(Vector3 position)
     {
@@ -176,6 +191,26 @@ public class SpawnLocationHandler : MonoBehaviour
             //discordNetworkLayerService.SendMessegeToAllOthers(NetworkChannel.OBJECT_POSITION)
         }
         //Send A package that we have spawned in a Ship for User
+    }
+
+    public void Respawn(Ship ship)
+    {
+
+        StartCoroutine(Respawning(ship));
+
+    }
+
+    IEnumerator Respawning(Ship ship)
+    {
+        yield return new WaitForSeconds(1);
+        if (DiscordLobbyService.INSTANCE.IsTheHost())
+        {
+            Vector3 respawnPosition = GetAvailableSpawnPoint();
+            ship.transform.position = respawnPosition;
+        }
+        ship.gameObject.SetActive(true);
+
+        yield break;
     }
 }
 public struct ShipTransformRequest

@@ -79,5 +79,12 @@ public class Health
 
         CheckHealthCondition();
     }
+    /// <summary>
+    /// Resets health to maximum value
+    /// </summary>
+    public void ResetHealth()
+    {
+        health = maxHealth;
+    }
 
 }

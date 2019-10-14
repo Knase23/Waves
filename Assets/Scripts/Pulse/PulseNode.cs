@@ -61,7 +61,7 @@ public class PulseNode : MonoBehaviour
         rigidBody.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
         rigidBody.isKinematic = true;
     }
-    private void OnCollisionEnter(Collision other)
+    private void OnTriggerEnter(Collider other)
     {
         PulseNode nodeScript = other.gameObject.GetComponent<PulseNode>();
         if (nodeScript != null && other.transform.parent != transform.parent)
@@ -72,7 +72,7 @@ public class PulseNode : MonoBehaviour
                 strength -= nodeScript.strength;
                 nodeScript.strength -= tempStrength;
 
-                
+
                 if (nodeScript.strength <= 0)
                 {
                     nodeScript.gameObject.SetActive(false);
@@ -87,18 +87,15 @@ public class PulseNode : MonoBehaviour
         else if (other.transform != makerOfPulse && nodeScript == null)
         {
             //IDamagable damagable = other.GetComponent<IDamagable>();
-            IPushable  pushable = other.gameObject.GetComponent<IPushable>();
-            if(pushable != null)
+            IPushable pushable = other.gameObject.GetComponent<IPushable>();
+            if (pushable != null)
             {
-                if(other.contactCount > 0)
-                {
-                    ContactPoint point = other.GetContact(0);
-                    Vector3 dir = point.point - transform.position;
+                    Vector3 dir = other.transform.position - center.transform.position;
                     pushable.PushAway(dir.normalized, strength);
                     gameObject.SetActive(false);
-                }
+                
             }
-            if (other.gameObject.tag == "Asteriod" && !other.collider.isTrigger)
+            if (other.gameObject.tag == "Asteriod" &&  !other.isTrigger)
             {
                 gameObject.SetActive(false);
             }
@@ -114,7 +111,6 @@ public class PulseNode : MonoBehaviour
             //    gameObject.SetActive(false);
             //}
         }
-
     }
     private void Update()
     {
