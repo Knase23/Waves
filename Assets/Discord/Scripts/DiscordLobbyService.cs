@@ -80,6 +80,9 @@ public class DiscordLobbyService : MonoBehaviour
     public event LobbyManager.SpeakingHandler OnSpeaking;
 
     public event LobbyManager.NetworkMessageHandler OnNetworkMessage;
+
+    public delegate void JoinedLobby();
+    public event JoinedLobby OnJoinedLobby;
     // Start is called before the first frame update
     void Start()
     {
@@ -202,21 +205,23 @@ public class DiscordLobbyService : MonoBehaviour
         lobbyManager.CreateLobby(txn, (Result result, ref Lobby lobby) =>
         {
             SetCurrent(lobby.Id, lobby.Secret, lobby.OwnerId);
+            OnJoinedLobby?.Invoke();
+            
             NewUpdateLobbyTransaction();
         });
     }
-    public void UpdateLobbySize(uint numberOfLocalPlayersConnected)
-    {
-        if (!IsOnline)
-            return;
-        var transaction = lobbyManager.GetLobbyUpdateTransaction(CurrentLobbyId);
-        transaction.SetCapacity(5 - numberOfLocalPlayersConnected);
-        lobbyManager.UpdateLobby(CurrentLobbyId, transaction, (Result result) =>
-         {
-             if (result != Result.Ok)
-                 Debug.Log(result);
-         });
-    }
+    //public void UpdateLobbySize(uint numberOfLocalPlayersConnected)
+    //{
+    //    if (!IsOnline)
+    //        return;
+    //    var transaction = lobbyManager.GetLobbyUpdateTransaction(CurrentLobbyId);
+    //    transaction.SetCapacity(5 - numberOfLocalPlayersConnected);
+    //    lobbyManager.UpdateLobby(CurrentLobbyId, transaction, (Result result) =>
+    //     {
+    //         if (result != Result.Ok)
+    //             Debug.Log(result);
+    //     });
+    //}
 
     public void DisconnectLobby()
     {
@@ -265,6 +270,7 @@ public class DiscordLobbyService : MonoBehaviour
             if (result == Result.Ok)
             {
                 SetCurrent(lobby.Id, lobby.Secret, lobby.OwnerId);
+                OnJoinedLobby?.Invoke();
             }
             else
             {
@@ -281,6 +287,7 @@ public class DiscordLobbyService : MonoBehaviour
             if (result == Result.Ok)
             {
                 SetCurrent(lobby.Id, lobby.Secret, lobby.OwnerId);
+                OnJoinedLobby?.Invoke();
                 DiscordNetworkLayerService.INSTANCE.SetMyPeerId();
             }
             else
@@ -353,29 +360,17 @@ public class DiscordLobbyService : MonoBehaviour
     {
         if (!IsOnline)
             return;
+        var lobbyTransaction = lobbyManager.GetLobbyUpdateTransaction(currentLobbyId);
 
-        var transaction = lobbyManager.GetLobbyUpdateTransaction(CurrentLobbyId);
-
-        #region Set Meta Data For Lobby
-        if (SceneManager.GetActiveScene().name == "Game")
+        lobbyManager.UpdateLobby(CurrentLobbyId, lobbyTransaction, (newResult) =>
         {
-            transaction.SetLocked(true);
-        }
-        else
-        {
-            transaction.SetLocked(false);
-        }
-        #endregion
-
-        lobbyManager.UpdateLobby(CurrentLobbyId, transaction, (newResult) =>
-        {
-            if (newResult == Result.Ok)
+            if (newResult == Result.Ok || newResult == Result.InternalError)
             {
                 //Debug.Log("Lobby updated");
             }
             else
             {
-                //Debug.Log(newResult, gameObject);
+                Debug.Log(newResult, gameObject);
             }
         });
     }
@@ -386,7 +381,9 @@ public class DiscordLobbyService : MonoBehaviour
             return;
         if (Debugging)
             Debug.Log("SetMetaData: UserID: " + userid + " Key: " + key + " Value: " + value);
+
         var memberTransaction = lobbyManager.GetMemberUpdateTransaction(CurrentLobbyId, userid);
+
         memberTransaction.SetMetadata(key, value);
         lobbyManager.UpdateMember(CurrentLobbyId, userid, memberTransaction, (result) =>
            {
@@ -403,17 +400,47 @@ public class DiscordLobbyService : MonoBehaviour
         }
         if (Debugging)
             Debug.Log("SetMetaData: UserID: " + DiscordManager.CurrentUser.Id + " Key: " + key + " Value: " + value);
-        var memberTransaction = lobbyManager.GetMemberUpdateTransaction(CurrentLobbyId, DiscordManager.CurrentUser.Id);
-        memberTransaction.SetMetadata(key, value);
-        lobbyManager.UpdateMember(CurrentLobbyId, DiscordManager.CurrentUser.Id, memberTransaction, (result) =>
-        {
-            if (result != Result.Ok)
-                Debug.Log(result);
-        });
-        //Debug.Log("Setted: " + key + " : " + value);
+
+        SetMetaDataOfMember(DiscordManager.CurrentUser.Id, key, value);
     }
     public string GetMetaDataOfMember(long userid, string key)
     {
-        return lobbyManager.GetMemberMetadataValue(CurrentLobbyId, userid, key);
+        string result = "";
+        result = lobbyManager.GetMemberMetadataValue(CurrentLobbyId, userid, key);
+        return result;
+    }
+
+    public void SetLobbyData(Lobby lobbyData)
+    {
+        if (!IsOnline)
+        {
+            return;
+        }
+        var lobbyTransaction = lobbyManager.GetLobbyUpdateTransaction(currentLobbyId);
+        lobbyTransaction.SetCapacity(lobbyData.Capacity);
+        lobbyTransaction.SetOwner(lobbyData.OwnerId);
+        lobbyTransaction.SetType(lobbyData.Type);
+        lobbyManager.UpdateLobby(CurrentLobbyId, lobbyTransaction, (result) =>
+         {
+             if (result != Result.Ok)
+                 Debug.Log(result);
+
+         });
+
+    }
+    public void SetLobbyMetaData(string key,string value)
+    {
+        if (!IsOnline)
+        {
+            return;
+        }
+        var lobbyTransaction = lobbyManager.GetLobbyUpdateTransaction(currentLobbyId);
+        lobbyTransaction.SetMetadata(key,value);
+        lobbyManager.UpdateLobby(CurrentLobbyId, lobbyTransaction, (result) =>
+        {
+            if (result != Result.Ok)
+                Debug.Log(result);
+
+        });
     }
 }

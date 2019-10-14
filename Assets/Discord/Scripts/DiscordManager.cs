@@ -61,7 +61,6 @@ public class DiscordManager : MonoBehaviour
     void Update()
     {
         discord.RunCallbacks();
-        
     }
 
     public void UpdateCurrentUser()

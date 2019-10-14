@@ -7,6 +7,7 @@ public class LobbyListOfMembers : MonoBehaviour
     public GameObject UserElementPrefab;
 
     Dictionary<long, UserElement> userIdToUserElement = new Dictionary<long, UserElement>();
+
     // Start is called before the first frame update
     void Start()
     {
@@ -44,4 +45,10 @@ public class LobbyListOfMembers : MonoBehaviour
         
 
     }
+
+    public UserElement GetUserElement(long userId )
+    {
+        return userIdToUserElement[userId];
+    }
+
 }

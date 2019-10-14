@@ -82,6 +82,4 @@ public class LoadGameIn : MonoBehaviour
                 break;
         }
     }
-
-    
 }

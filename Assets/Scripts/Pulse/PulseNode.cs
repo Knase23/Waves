@@ -92,7 +92,6 @@ public class PulseNode : MonoBehaviour
             {
                 if(other.contactCount > 0)
                 {
-                    Debug.Log(other.contactCount);
                     ContactPoint point = other.GetContact(0);
                     Vector3 dir = point.point - transform.position;
                     pushable.PushAway(dir.normalized, strength);
