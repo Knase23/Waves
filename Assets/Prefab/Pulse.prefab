@@ -43,4 +43,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b106b5a242600414dbb8038064a1ef65, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  pulseSegmentPrefab: {fileID: 1425035344387781389, guid: bc5d1e9209794014bae8fcd172633ca3,
+    type: 3}
   listOfNodes: []

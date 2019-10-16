@@ -264,6 +264,8 @@ MonoBehaviour:
   speed: 5
   power: 10
   maxDistance: 5
+  pulsePrefab: {fileID: 8009653376189735723, guid: 5aa30a59611d0924ba05c41d4fcd3941,
+    type: 3}
 --- !u!1001 &831934361
 PrefabInstance:
   m_ObjectHideFlags: 0

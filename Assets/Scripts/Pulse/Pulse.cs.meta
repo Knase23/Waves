@@ -3,7 +3,9 @@ guid: b106b5a242600414dbb8038064a1ef65
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - pulseSegmentPrefab: {fileID: 1425035344387781389, guid: bc5d1e9209794014bae8fcd172633ca3,
+      type: 3}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

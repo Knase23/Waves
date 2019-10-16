@@ -22,11 +22,10 @@ public class PulseNode : MonoBehaviour
     /// </summary>
     public float strength;
 
-    public static PulseNode CreateNode(Pulse pulse, float curAngle, float distanceFromCenter, float strength, Transform makerOfPulse, Color makerColor )
+    public static PulseNode CreateNode(Pulse pulse,GameObject PulseSegmentPrefab, float curAngle, float distanceFromCenter, float strength, Transform makerOfPulse, Color makerColor )
     {
-        GameObject gameObject = new GameObject("Node");
-        gameObject.transform.parent = pulse.transform;
-        PulseNode node = gameObject.AddComponent<PulseNode>();
+        GameObject gameObject = Instantiate(PulseSegmentPrefab, pulse.transform);
+        PulseNode node = gameObject.GetComponent<PulseNode>();
         node.transform.localPosition = new Vector3(Mathf.Cos(Mathf.Deg2Rad * curAngle) * distanceFromCenter, 0, Mathf.Sin(Mathf.Deg2Rad * curAngle) * distanceFromCenter);
         node.InitNode(gameObject, strength, makerOfPulse,makerColor);
         return node;
@@ -35,6 +34,8 @@ public class PulseNode : MonoBehaviour
     private void Start()
     {
         Statistics.instance.numberOfNodes++;
+        lineRenderer = GetComponent<LineRenderer>();
+        capsuleCollider = GetComponent<CapsuleCollider>();
     }
     public void InitNode(GameObject center, float strength, Transform makerOfPulse,Color color)
     {
@@ -47,16 +48,16 @@ public class PulseNode : MonoBehaviour
     }
     public void CreateLineBetweenNodes()
     {
-        lineRenderer = gameObject.AddComponent<LineRenderer>();
+        lineRenderer = GetComponent<LineRenderer>();
         lineRenderer.InitilizeLine(transform, right.transform, makerColor);
     }
     public void CreateColliderLineBetweenNodes()
     {
         transform.LookAt(right.transform);
-        capsuleCollider = gameObject.AddComponent<CapsuleCollider>();
+        capsuleCollider = GetComponent<CapsuleCollider>();
         capsuleCollider.InitiLineCollider(right.transform);
        
-        rigidBody = gameObject.AddComponent<Rigidbody>();
+        rigidBody = GetComponent<Rigidbody>();
         rigidBody.useGravity = false;
         rigidBody.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
         rigidBody.isKinematic = true;

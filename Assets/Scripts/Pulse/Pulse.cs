@@ -5,6 +5,8 @@ using UnityEngine;
 
 public class Pulse : MonoBehaviour
 {
+    public GameObject pulseSegmentPrefab;
+
     private int degreesPerSegment = 45;
     private float distanceFromCenter = 1f;
     public List<PulseNode> listOfNodes = new List<PulseNode>();
@@ -13,12 +15,10 @@ public class Pulse : MonoBehaviour
     private float maxDistance = 10;
     private float previousDistanceFromCenter = 0;
 
-    public static void CreatePulse(float speed, float strength, float maxDistance, Transform maker,Color color)
+    public static void CreatePulse(GameObject pulsePrefab,float speed, float strength, float maxDistance, Transform maker,Color color)
     {
-        GameObject gameObject = new GameObject("Pulse");
-        gameObject.transform.position = maker.position;
-        gameObject.transform.parent = maker;
-        Pulse pulse = gameObject.AddComponent<Pulse>();
+        GameObject gameObject = Instantiate(pulsePrefab, maker.position, Quaternion.identity,maker);
+        Pulse pulse = gameObject.GetComponent<Pulse>();
         pulse.Init(speed, strength, maxDistance,maker,color);
     }
     // Start is called before the first frame update
@@ -36,7 +36,7 @@ public class Pulse : MonoBehaviour
         {
 
             // Create a Node
-            PulseNode node = PulseNode.CreateNode(this, curAngle, distanceFromCenter, strength,maker,color);
+            PulseNode node = PulseNode.CreateNode(this,pulseSegmentPrefab, curAngle, distanceFromCenter, strength,maker,color);
 
             //Íncreasing this makes so the next node will have a diffrent position
             curAngle += degreesPerSegment;

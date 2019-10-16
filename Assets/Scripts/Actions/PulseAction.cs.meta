@@ -3,7 +3,9 @@ guid: ae4ea8f36e2c4ae4b916c43b2aa4011b
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - pulsePrefab: {fileID: 8009653376189735723, guid: 5aa30a59611d0924ba05c41d4fcd3941,
+      type: 3}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 
