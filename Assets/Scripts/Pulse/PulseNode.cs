@@ -12,7 +12,9 @@ public class PulseNode : MonoBehaviour
     internal Vector3 directionFromCenter;
     public Transform makerOfPulse;
     public Color makerColor = Color.green;
-
+    private GameObject pulseSegmentPrefab;
+    public GameObject particleEffectPrefab;
+    private ParticalFollow particleEffect;
     MeshFilter filter;
     List<Vector3> vertices = new List<Vector3>();
     Rigidbody rigidBody;
@@ -27,7 +29,7 @@ public class PulseNode : MonoBehaviour
         GameObject gameObject = Instantiate(PulseSegmentPrefab, pulse.transform);
         PulseNode node = gameObject.GetComponent<PulseNode>();
         node.transform.localPosition = new Vector3(Mathf.Cos(Mathf.Deg2Rad * curAngle) * distanceFromCenter, 0, Mathf.Sin(Mathf.Deg2Rad * curAngle) * distanceFromCenter);
-        node.InitNode(gameObject, strength, makerOfPulse,makerColor);
+        node.InitNode(PulseSegmentPrefab, gameObject, strength, makerOfPulse,makerColor);
         return node;
     }
 
@@ -36,19 +38,33 @@ public class PulseNode : MonoBehaviour
         Statistics.instance.numberOfNodes++;
         lineRenderer = GetComponent<LineRenderer>();
         capsuleCollider = GetComponent<CapsuleCollider>();
+        particleEffect = Instantiate(particleEffectPrefab).GetComponent<ParticalFollow>();
+        particleEffect.targetToFollow = transform;
+        particleEffect.SetColorOfParticleEffect(makerColor);
     }
-    public void InitNode(GameObject center, float strength, Transform makerOfPulse,Color color)
+    private void OnDisable()
     {
+        particleEffect.ActivateDestroyWithSetLifeTime();
+    }
+    private void OnDestroy()
+    {
+        if(particleEffect)
+            particleEffect.ActivateDestroyWithSetLifeTime();
+    }
+    public void InitNode(GameObject PulseSegmentPrefab,GameObject center, float strength, Transform makerOfPulse,Color color)
+    {
+        pulseSegmentPrefab = PulseSegmentPrefab;
         this.center = center;
         directionFromCenter = new Vector3(transform.localPosition.x, transform.localPosition.y, transform.localPosition.z);
         directionFromCenter.Normalize();
         this.strength = strength;
         this.makerOfPulse = makerOfPulse;
         this.makerColor = color;
+        
     }
     public void CreateLineBetweenNodes()
     {
-        lineRenderer = GetComponent<LineRenderer>();
+        lineRenderer =  GetComponent<LineRenderer>();
         lineRenderer.InitilizeLine(transform, right.transform, makerColor);
     }
     public void CreateColliderLineBetweenNodes()
@@ -135,14 +151,17 @@ public class PulseNode : MonoBehaviour
     public void CreateAdditionalNode()
     {
         //Creates a gameobject where it should be in the circle
-        GameObject node = new GameObject(transform.name + " : Node : ");
+
+        GameObject node = Instantiate(pulseSegmentPrefab, transform.parent);
+
+        //GameObject node = new GameObject(transform.name + " : Node : ");
         node.transform.parent = transform.parent;
         node.transform.position = (right.transform.position + transform.position) * 0.5f;
 
         //Make the gameobject into a node. 
-        PulseNode newNodeScript = node.AddComponent<PulseNode>();
+        PulseNode newNodeScript = node.GetComponent<PulseNode>();
         // Sets all values to the correct values based on the Node that creates the new node.
-        newNodeScript.InitNode(center, strength,makerOfPulse,makerColor);
+        newNodeScript.InitNode(pulseSegmentPrefab,center, strength,makerOfPulse,makerColor);
 
         //Add in the nodes neighbours. And change the 
         newNodeScript.SetNeighbours(right, this);

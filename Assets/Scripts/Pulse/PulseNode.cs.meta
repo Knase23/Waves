@@ -3,7 +3,11 @@ guid: 2e80d7d54fd47fd4c834d9a89a4ef6b3
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - center: {instanceID: 0}
+  - makerOfPulse: {instanceID: 0}
+  - particleEffect: {fileID: 368226119830548628, guid: e956f9a4dd96ff14abef701661524d9b,
+      type: 3}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

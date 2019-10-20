@@ -22061,7 +22061,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   numberOfNodes: 0
   numberOfShips: 0
-  maxLengthBetweenNodes: 5
+  maxLengthBetweenNodes: 2
   showWhereCircleSplits: 0
   numberOfSplitsLevels: 0
 --- !u!4 &350141289

@@ -641,10 +641,10 @@ PlayerSettings:
   facebookXfbml: 0
   facebookFrictionlessRequests: 1
   apiCompatibilityLevel: 6
-  cloudProjectId: 
+  cloudProjectId: 114a68d1-bb05-46d2-afe5-05d356792311
   framebufferDepthMemorylessMode: 0
-  projectName: 
-  organizationId: 
+  projectName: Waves
+  organizationId: knase23
   cloudEnabled: 0
   enableNativePlatformBackendsForNewInputSystem: 0
   disableOldInputManagerSupport: 0
