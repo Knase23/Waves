@@ -1039,7 +1039,7 @@ namespace Discord
                 Methods.Destroy(MethodsPtr);
             }
             Marshal.FreeHGlobal(EventsPtr);
-            Marshal.FreeHGlobal(ApplicationEventsPtr);
+            //Marshal.FreeHGlobal(ApplicationEventsPtr);
             Marshal.FreeHGlobal(UserEventsPtr);
             Marshal.FreeHGlobal(ImageEventsPtr);
             Marshal.FreeHGlobal(ActivityEventsPtr);

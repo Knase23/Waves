@@ -140,7 +140,7 @@ public class SpawnLocationHandler : MonoBehaviour
             SpawnInOneShipForUser(DiscordManager.CurrentUser.Id, position);
         }
 
-        GameManager.Instance.gameState = GameManager.GameState.GAME_IN_SESSION;
+        GameManager.Instance.SetGameState(GameManager.GameState.GAME_IN_SESSION);
         Invoke("RequestForAllShipPositions", 0.5f);
     }
     private Vector3 GetAvailableSpawnPoint()

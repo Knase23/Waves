@@ -44,5 +44,11 @@ public interface IPlayerShipControl
     /// <param name="position"></param>
     void ChangeTransform(TransformDataPackage transformData);
 
+    /// <summary>
+    /// Change Apperance of Ship
+    /// </summary>
+    /// <param name="position"></param>
+    void ShipApperance(Color color);
+
 
 }

@@ -37,10 +37,10 @@ public class DiscordManager : MonoBehaviour
         //var discord0 = new Discord.Discord(ApplicationId, (System.UInt64)Discord.CreateFlags.Default);
 
         //// This makes the SDK connect to PTB
-#if UNITY_EDITOR
-        System.Environment.SetEnvironmentVariable("DISCORD_INSTANCE_ID", "1");
-        //var discord1 = new Discord.Discord(ApplicationId, (System.UInt64)Discord.CreateFlags.Default);
-#endif
+//#if UNITY_EDITOR
+//        System.Environment.SetEnvironmentVariable("DISCORD_INSTANCE_ID", "1");
+//        //var discord1 = new Discord.Discord(ApplicationId, (System.UInt64)Discord.CreateFlags.Default);
+//#endif
         /*
             Grab that Client ID from earlier
             Discord.CreateFlags.Default will require Discord to be running for the game to work
@@ -51,7 +51,15 @@ public class DiscordManager : MonoBehaviour
             Step 3 will fail when running directly from the Unity editor
             Therefore, always keep Discord running during tests, or use Discord.CreateFlags.NoRequireDiscord
         */
-        discord = new Discord.Discord(CLIENT_ID, (System.UInt64)Discord.CreateFlags.Default);
+        try
+        {
+            discord = new Discord.Discord(CLIENT_ID, (System.UInt64)Discord.CreateFlags.Default);
+        }
+        catch (System.Exception r)
+        {
+            Debug.Log(r);
+        }
+       
         
         //discord = new Discord.Discord(ApplicationId, (System.UInt64)Discord.CreateFlags.Default);
         Invoke("UpdateCurrentUser", 1);
@@ -63,6 +71,11 @@ public class DiscordManager : MonoBehaviour
         discord.RunCallbacks();
     }
 
+    private void OnDisable()
+    {
+        if(discord != null)
+            discord.RunCallbacks();
+    }
     public void UpdateCurrentUser()
     {
         CurrentUser = discord.GetUserManager().GetCurrentUser();
@@ -77,10 +90,5 @@ public class DiscordManager : MonoBehaviour
         }
 
         return discord;
-    }
-
-    private void OnApplicationQuit()
-    {
-        discord.Dispose();
     }
 }

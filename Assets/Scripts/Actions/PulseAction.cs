@@ -5,16 +5,16 @@ public class PulseAction : Action
 {
     public float speed, power, maxDistance;
     public GameObject pulsePrefab;
-    private Color color;
+    private Ship shipController;
 
     private void Start()
     {
-        color = GetComponent<Ship>().shipColor;
+        shipController = GetComponent<Ship>();
     }
 
     protected override void ActionExecute()
     {
-        Pulse.CreatePulse(pulsePrefab, speed, power, maxDistance, transform,color);
+        Pulse.CreatePulse(pulsePrefab, speed, power, maxDistance, transform, shipController.shipColor);
     }
 
     public override void ApplyUpgrade(Ship ship, Upgrade upgrade)

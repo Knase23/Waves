@@ -46,11 +46,6 @@ public class PulseNode : MonoBehaviour
     {
         particleEffect.ActivateDestroyWithSetLifeTime();
     }
-    private void OnDestroy()
-    {
-        if(particleEffect)
-            particleEffect.ActivateDestroyWithSetLifeTime();
-    }
     public void InitNode(GameObject PulseSegmentPrefab,GameObject center, float strength, Transform makerOfPulse,Color color)
     {
         pulseSegmentPrefab = PulseSegmentPrefab;

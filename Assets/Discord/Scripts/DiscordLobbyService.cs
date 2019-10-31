@@ -83,6 +83,8 @@ public class DiscordLobbyService : MonoBehaviour
 
     public delegate void JoinedLobby();
     public event JoinedLobby OnJoinedLobby;
+    public delegate void LeftLobby();
+    public event LeftLobby OnLeftLobby;
     // Start is called before the first frame update
     void Start()
     {
@@ -190,8 +192,7 @@ public class DiscordLobbyService : MonoBehaviour
             if (member.Id != DiscordManager.CurrentUser.Id && lobbyManager.MemberMetadataCount(lobbyId, member.Id) >= 2)
                 DiscordNetworkLayerService.INSTANCE.EstablishConnectionWithMember(lobbyId, member.Id);
         }
-
-        OnLobbyUpdate(lobbyId);
+        OnLobbyUpdate?.Invoke(lobbyId);
     }
     // Functions to Use to Call from other scripts
     public void CreateLobby()
@@ -206,7 +207,6 @@ public class DiscordLobbyService : MonoBehaviour
         {
             SetCurrent(lobby.Id, lobby.Secret, lobby.OwnerId);
             OnJoinedLobby?.Invoke();
-            
             NewUpdateLobbyTransaction();
         });
     }
@@ -229,6 +229,13 @@ public class DiscordLobbyService : MonoBehaviour
             return;
         if(Debugging)
             Debug.Log("Try to leave lobby");
+
+        if (lobbyManager.MemberCount(CurrentLobbyId) <= 1)
+        {
+            RemoveLobby();
+            return;
+        }
+
         lobbyManager.DisconnectLobby(CurrentLobbyId, (Result result) =>
         {
             if (result != Result.Ok)
@@ -239,6 +246,7 @@ public class DiscordLobbyService : MonoBehaviour
             {
                 Debug.Log("Left Lobby");
                 SetCurrent(0, string.Empty, 0);
+                OnLeftLobby?.Invoke();
             }
         });
 
@@ -259,12 +267,20 @@ public class DiscordLobbyService : MonoBehaviour
             else
             {
                 Debug.Log("Deleted Lobby");
+                SetCurrent(0, string.Empty, 0);
+                OnLeftLobby?.Invoke();
             }
         });
     }
+    private void OnDisable()
+    {
+        Debug.Log("OnDisable: Discord Lobby Service", gameObject);
+        DisconnectLobby();
+    }
+
     public void ConnectToLobby()
     {
-        var l = GetLobby();
+        var l = GetCurrentLobby();
         lobbyManager.ConnectLobby(l.Id, l.Secret, (Result result, ref Lobby lobby) =>
         {
             if (result == Result.Ok)
@@ -287,7 +303,7 @@ public class DiscordLobbyService : MonoBehaviour
             if (result == Result.Ok)
             {
                 SetCurrent(lobby.Id, lobby.Secret, lobby.OwnerId);
-                OnJoinedLobby?.Invoke();
+               
                 DiscordNetworkLayerService.INSTANCE.SetMyPeerId();
             }
             else
@@ -295,18 +311,47 @@ public class DiscordLobbyService : MonoBehaviour
                 Debug.Log(result);
             }
         });
+        OnJoinedLobby?.Invoke();
     }
 
 
     //Getters
 
-    public Lobby GetLobby()
+    public Lobby GetCurrentLobby()
     {
         if (lobbyManager == null || !IsOnline || CurrentLobbyId == 0)
             return new Lobby();
 
         return lobbyManager.GetLobby(CurrentLobbyId);
     }
+    public Lobby GetLobby(long id)
+    {
+        if(lobbyManager == null || id == 0)
+            return new Lobby();
+        try
+        {
+            return lobbyManager.GetLobby(id);
+        }
+        catch (ResultException)
+        {
+            return new Lobby();
+        }
+
+    }
+    public string GetLobbyMetaData(long id, string key)
+    {
+        string result = "";
+        try
+        {
+            result = lobbyManager.GetLobbyMetadataValue(id, key);
+        }
+        catch (System.Exception)
+        {
+            throw new ResultException(Result.InternalError);
+        }
+        return result;
+    }
+
     public int GetMemberCount()
     {
         if (lobbyManager == null || CurrentLobbyId == 0)

@@ -161,6 +161,13 @@ public class Ship : MonoBehaviour, IPlayerShipControl, IDamagable, IPushable
     }
     #endregion
 
+    public void ShipApperance(Color color)
+    {
+        shipColor = color;
+
+
+    }
+
     #endregion
 
     #region IDamageble Functions
@@ -201,6 +208,8 @@ public class Ship : MonoBehaviour, IPlayerShipControl, IDamagable, IPushable
             //Maybe the one that made me vulnerable should get points
         }
     }
+
+    
 }
 
 public struct TransformDataPackage

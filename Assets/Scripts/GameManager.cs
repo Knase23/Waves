@@ -39,12 +39,12 @@ public class GameManager : MonoBehaviour
 
     private void GameManager_OnJoinedLobby()
     {
-        gameState = GameState.IN_LOBBY;
+        SetGameState(GameState.IN_LOBBY);
     }
 
     private void GameManager_OnDisconnectLobby()
     {
-        gameState = GameState.NOT_IN_LOBBY;
+        SetGameState(GameState.NOT_IN_LOBBY);
     }
 
     public static void CheckOnline()
@@ -92,6 +92,35 @@ public class GameManager : MonoBehaviour
         GAME_IN_SESSION,
         GAME_END
     }
+    public void SetGameState(GameState state)
+    {
+        gameState = state;
+        //What should happen when the state is changed
+        switch (state)
+        {
+            case GameState.NOT_IN_LOBBY:
+                break;
+            case GameState.IN_LOBBY:
+                break;
+            case GameState.LOADING_MAP:
+                //When we are currently 
+                break;
+            case GameState.DONE_LOADING_MAP:
+                //Sets so we know the client is done loading in the map
+                break;
+            case GameState.GAME_IN_SESSION:
+                Time.timeScale = 1;
+                //Everything is running until GameTime is zero
+                break;
+            case GameState.GAME_END:
+                // Display Score for all current players and a disconnect for all players
+                Time.timeScale = 0;
+                break;
+            default:
+                break;
+        }
+    }
+
 }
 
 public struct LoadScenePackage

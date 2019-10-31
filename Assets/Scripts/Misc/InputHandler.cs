@@ -50,6 +50,7 @@ public class InputHandler : MonoBehaviour
         label = Instantiate(labelPrefab).GetComponent<ShipLabel>();
         label.followTarget.target = transform;
         label.UserId = userId;
+
     }
     
     // Update is called once per frame
@@ -81,6 +82,10 @@ public class InputHandler : MonoBehaviour
     {
         UserId = userID;
         label.UserId = userId;
+        if(userID != DiscordManager.CurrentUser.Id)
+        {
+            shipControl.ShipApperance(Color.red);
+        }
     }
     public void ReciveInputData(InputData data)
     {
