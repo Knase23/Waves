@@ -108,6 +108,7 @@ GameObject:
   - component: {fileID: 501978032883012348}
   - component: {fileID: 501978032883012347}
   - component: {fileID: 501978032883012349}
+  - component: {fileID: 5652952512827072140}
   m_Layer: 0
   m_Name: Ship
   m_TagString: Player
@@ -248,6 +249,8 @@ MonoBehaviour:
   actionTwo: {fileID: 0}
   actionThree: {fileID: 0}
   vulnerable: 0
+  prefabOnDeath: {fileID: 3662113763918760256, guid: 5d14d7f9f0cbe1c4da4d39614b3b96e4,
+    type: 3}
 --- !u!114 &501978032883012349
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -266,6 +269,20 @@ MonoBehaviour:
   maxDistance: 5
   pulsePrefab: {fileID: 8009653376189735723, guid: 5aa30a59611d0924ba05c41d4fcd3941,
     type: 3}
+--- !u!114 &5652952512827072140
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 501978032883012324}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4d95dea1be7ef874e91359cb71c70b9d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Id: 0
+  score: 0
 --- !u!1001 &831934361
 PrefabInstance:
   m_ObjectHideFlags: 0

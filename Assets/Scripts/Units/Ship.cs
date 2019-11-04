@@ -38,17 +38,21 @@ public class Ship : MonoBehaviour, IPlayerShipControl, IDamagable, IPushable
 
 
     private Rigidbody rb;
-
+    private ScoreHandler scoreHandler;
     private long userId;
     private float vertical;
     private float horizontal;
 
     public bool vulnerable;
 
+    public GameObject prefabOnDeath;
+
     private void Start()
     {
         hp.OnDeath += OnDeath;
         rb = GetComponent<Rigidbody>();
+        scoreHandler = GetComponent<ScoreHandler>();
+
     }
     private void Update()
     {
@@ -84,6 +88,11 @@ public class Ship : MonoBehaviour, IPlayerShipControl, IDamagable, IPushable
             return;
         }
 
+        if(upgrade is ScorePickUp)
+        {
+            scoreHandler?.AddScore((int)upgrade.amount);
+            return;
+        }
         storedUpgrade = upgrade;
 
     }
@@ -164,7 +173,8 @@ public class Ship : MonoBehaviour, IPlayerShipControl, IDamagable, IPushable
     public void ShipApperance(Color color)
     {
         shipColor = color;
-
+        
+        //MAKE THE SHIP THE RIGHT COLOR !!!
 
     }
 
@@ -183,6 +193,9 @@ public class Ship : MonoBehaviour, IPlayerShipControl, IDamagable, IPushable
         Debug.Log(gameObject.name + " - You diead!");
         SpawnLocationHandler.INSTANCE.Respawn(this);
         hp.ResetHealth();
+
+        Instantiate(prefabOnDeath,transform.position,Quaternion.identity);
+
         gameObject.SetActive(false);
         //Spawn on new position after a set amount of miliseconds/seconds
         //Send Messege to SpawnLocationHandler to relocate object

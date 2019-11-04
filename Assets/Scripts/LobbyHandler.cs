@@ -121,10 +121,16 @@ public class LobbyHandler : MonoBehaviour
     }
     public void StartGameFunciton()
     {
+        StartCoroutine(StartGameSequence());
+    }
+    IEnumerator StartGameSequence()
+    {
         if (DiscordLobbyService.INSTANCE.IsTheHost())
         {
             GameTimeInputFunction();
         }
+        yield return new WaitForSecondsRealtime(0.2f);
+
         foreach (var item in DiscordLobbyService.INSTANCE.GetLobbyMembers())
         {
             string metaData = "";
@@ -144,13 +150,15 @@ public class LobbyHandler : MonoBehaviour
 
             if (!result)
             {
-                return;
+                yield break;
             }
         }
+
         Discord.Lobby lobby = DiscordLobbyService.INSTANCE.GetCurrentLobby();
         lobby.Locked = true;
         DiscordLobbyService.INSTANCE.SetLobbyData(lobby);
         GameManager.Instance.LoadGameScene();
+        yield break;
     }
 
     public void UpdateTheCapacityOfLobby()

@@ -29,7 +29,7 @@ public class PulseNode : MonoBehaviour
         GameObject gameObject = Instantiate(PulseSegmentPrefab, pulse.transform);
         PulseNode node = gameObject.GetComponent<PulseNode>();
         node.transform.localPosition = new Vector3(Mathf.Cos(Mathf.Deg2Rad * curAngle) * distanceFromCenter, 0, Mathf.Sin(Mathf.Deg2Rad * curAngle) * distanceFromCenter);
-        node.InitNode(PulseSegmentPrefab, gameObject, strength, makerOfPulse,makerColor);
+        node.InitNode(PulseSegmentPrefab, makerOfPulse.gameObject, strength, makerOfPulse,makerColor);
         return node;
     }
 

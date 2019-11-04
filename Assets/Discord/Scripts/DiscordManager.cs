@@ -37,10 +37,10 @@ public class DiscordManager : MonoBehaviour
         //var discord0 = new Discord.Discord(ApplicationId, (System.UInt64)Discord.CreateFlags.Default);
 
         //// This makes the SDK connect to PTB
-//#if UNITY_EDITOR
-//        System.Environment.SetEnvironmentVariable("DISCORD_INSTANCE_ID", "1");
-//        //var discord1 = new Discord.Discord(ApplicationId, (System.UInt64)Discord.CreateFlags.Default);
-//#endif
+#if UNITY_EDITOR
+        System.Environment.SetEnvironmentVariable("DISCORD_INSTANCE_ID", "1");
+        //var discord1 = new Discord.Discord(ApplicationId, (System.UInt64)Discord.CreateFlags.Default);
+#endif
         /*
             Grab that Client ID from earlier
             Discord.CreateFlags.Default will require Discord to be running for the game to work
