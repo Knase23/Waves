@@ -150,11 +150,13 @@ public class SpawnLocationHandler : MonoBehaviour
         int numberOfTries = 0;
         do
         {
-            int spawnPointIndex = UnityEngine.Random.Range(0, level.spawnpoints.Count);
-            if (!IsAShipNearSpawnPoint(level.spawnpoints[spawnPointIndex].transform.position))
-            {
-                foundPosition = level.spawnpoints[spawnPointIndex].transform.position;
-            }
+            int spawnPointIndex = 0; //UnityEngine.Random.Range(0, level.spawnpoints.Count);
+            // ONLY FOR PRESENTATION
+            //if (!IsAShipNearSpawnPoint(level.spawnpoints[spawnPointIndex].transform.position))
+            //{
+            //    foundPosition = level.spawnpoints[spawnPointIndex].transform.position;
+            //}
+            foundPosition = level.spawnpoints[spawnPointIndex].transform.position;
         } while (foundPosition == Vector3.down && numberOfTries >= level.spawnpoints.Count);
 
         return foundPosition;

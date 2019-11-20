@@ -76,12 +76,12 @@ public class GameManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Return))
-        {
-            lobbyService.CreateLobby();
-            UserData userData = FindObjectOfType<UserData>();
-            userData.id = DiscordManager.CurrentUser.Id;
-        }
+        //if (input.getkeydown(keycode.return))
+        //{
+        //    lobbyservice.createlobby();
+        //    userdata userdata = findobjectoftype<userdata>();
+        //    userdata.id = discordmanager.currentuser.id;
+        //}
     }
     public enum GameState
     {
