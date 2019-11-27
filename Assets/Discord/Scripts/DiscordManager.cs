@@ -33,7 +33,7 @@ public class DiscordManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        System.Environment.SetEnvironmentVariable("DISCORD_INSTANCE_ID", "0");
+        
         //var discord0 = new Discord.Discord(ApplicationId, (System.UInt64)Discord.CreateFlags.Default);
 
         //// This makes the SDK connect to PTB
