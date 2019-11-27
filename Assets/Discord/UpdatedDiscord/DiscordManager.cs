@@ -34,7 +34,14 @@ namespace JesperDiscord
         /// </summary>
         public static void RunCallBack()
         {
-            discord.RunCallbacks();
+            try
+            {
+                discord.RunCallbacks();
+            }
+            catch (ResultException result)
+            {
+                Debug.LogError(result.Message);
+            }
         }
 
         /// <summary>
